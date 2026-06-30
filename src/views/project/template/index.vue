@@ -130,7 +130,7 @@
                 showLoadingMore: false,
                 loadingMore: false,
                 currentTemplate: {},
-                cover:'https://beta.vilson.xyz/static/image/default/project-cover.png',
+                cover:'http://beta.vilson.xyz/static/image/default/project-cover.png',
                 // cover: config.PROD_URL + '/static/image/default/cover.png',
                 newData: {
                     id: 0,
