@@ -1,18 +1,62 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Button, Card, Chip } from "@heroui/react";
+import {
+  Button,
+  InputGroup,
+  Label,
+  ListBox,
+  Modal,
+  Select,
+  TextField,
+} from "@heroui/react";
 
-const phases = [
-  { title: "看板列 & 拖拽", phase: "Phase 3" },
-  { title: "任务详情抽屉", phase: "Phase 3" },
-  { title: "成员 / 文件 / 版本", phase: "Phase 4" },
-  { title: "工作流 & 模板", phase: "Phase 5" },
-];
+import { KanbanBoard } from "@/components/kanban-board";
+import { TaskDetailDrawer } from "@/components/task-detail-drawer";
+import * as taskApi from "@/api/task";
+import { fetchTaskStages } from "@/api/task";
+import type { TaskItem, TaskStage } from "@/types/api";
 
 export default function ProjectSpacePage() {
-  const { code } = useParams<{ code: string }>();
+  const { code: projectCode = "" } = useParams<{ code: string }>();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [selectedTask, setSelectedTask] = useState<TaskItem | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [stages, setStages] = useState<TaskStage[]>([]);
+  const [newTaskName, setNewTaskName] = useState("");
+  const [newTaskStage, setNewTaskStage] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+
+  async function openCreate() {
+    setCreateError(null);
+    setNewTaskName("");
+    try {
+      const list = await fetchTaskStages(projectCode);
+      setStages(list);
+      setNewTaskStage(list[0]?.code ?? "");
+      setCreateOpen(true);
+    } catch (e) {
+      setCreateError(e instanceof Error ? e.message : "无法加载看板列");
+    }
+  }
+
+  async function handleCreate() {
+    if (!newTaskName.trim() || !newTaskStage) return;
+    setCreating(true);
+    setCreateError(null);
+    try {
+      await taskApi.createTask(projectCode, newTaskStage, newTaskName.trim());
+      setCreateOpen(false);
+      setRefreshKey((k) => k + 1);
+    } catch (e) {
+      setCreateError(e instanceof Error ? e.message : "创建失败");
+    } finally {
+      setCreating(false);
+    }
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-sm text-muted">
@@ -20,45 +64,81 @@ export default function ProjectSpacePage() {
               项目
             </Link>
             {" / "}
-            {code}
+            {projectCode}
           </p>
           <h2 className="text-2xl font-semibold mt-1">任务看板</h2>
-          <p className="text-muted mt-1">
-            此处将重建 HistoryV 看板体验（参考原型，非代码迁移）
-          </p>
         </div>
-        <Button isDisabled variant="secondary">
-          创建任务
-        </Button>
+        <Button onPress={openCreate}>创建任务</Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {["待处理", "进行中", "已完成"].map((column) => (
-          <Card key={column} className="p-4 min-h-64">
-            <div className="flex items-center justify-between mb-4">
-              <p className="font-medium">{column}</p>
-              <Chip size="sm" variant="soft">
-                0
-              </Chip>
-            </div>
-            <div className="rounded-lg border border-dashed border-separator p-6 text-center text-sm text-muted">
-              看板占位
-            </div>
-          </Card>
-        ))}
-      </div>
+      {createError && !createOpen ? (
+        <p className="text-sm text-danger">{createError}</p>
+      ) : null}
 
-      <Card className="p-5">
-        <p className="font-medium mb-3">实现路线图</p>
-        <ul className="space-y-2 text-sm text-muted">
-          {phases.map((item) => (
-            <li key={item.title} className="flex items-center gap-2">
-              <Chip size="sm">{item.phase}</Chip>
-              {item.title}
-            </li>
-          ))}
-        </ul>
-      </Card>
+      <KanbanBoard
+        projectCode={projectCode}
+        refreshKey={refreshKey}
+        onTaskClick={(task) => setSelectedTask(task)}
+      />
+
+      <TaskDetailDrawer
+        open={!!selectedTask}
+        taskCode={selectedTask?.code ?? null}
+        onClose={() => setSelectedTask(null)}
+        onUpdated={() => setRefreshKey((k) => k + 1)}
+      />
+
+      <Modal.Backdrop isOpen={createOpen} onOpenChange={setCreateOpen}>
+        <Modal.Container>
+          <Modal.Dialog>
+            <Modal.CloseTrigger />
+            <Modal.Header>
+              <Modal.Heading>创建任务</Modal.Heading>
+            </Modal.Header>
+            <Modal.Body className="space-y-4">
+              {createError ? <p className="text-sm text-danger">{createError}</p> : null}
+              <TextField isRequired name="name">
+                <Label>任务名称</Label>
+                <InputGroup>
+                  <InputGroup.Input
+                    value={newTaskName}
+                    onChange={(e) => setNewTaskName(e.target.value)}
+                  />
+                </InputGroup>
+              </TextField>
+              <Select
+                aria-label="看板列"
+                selectedKey={newTaskStage || null}
+                onSelectionChange={(key) => {
+                  if (key) setNewTaskStage(String(key));
+                }}
+              >
+                <Select.Trigger>
+                  <Select.Value />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    {stages.map((s) => (
+                      <ListBox.Item key={s.code} id={s.code} textValue={s.name}>
+                        {s.name}
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
+              </Select>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="tertiary" onPress={() => setCreateOpen(false)}>
+                取消
+              </Button>
+              <Button isPending={creating} onPress={handleCreate}>
+                创建
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
     </div>
   );
 }

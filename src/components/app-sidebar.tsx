@@ -1,16 +1,26 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@heroui/react";
 import clsx from "clsx";
+import { useMemo } from "react";
 
 import { PearLogo } from "@/components/pear-logo";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { siteConfig } from "@/config/site";
+import { menuToNavRoutes } from "@/lib/menu";
 import { useAuthStore } from "@/stores/auth";
 
 export function AppSidebar() {
   const location = useLocation();
   const member = useAuthStore((s) => s.member);
+  const menuList = useAuthStore((s) => s.menuList);
   const logout = useAuthStore((s) => s.logout);
+
+  const navItems = useMemo(() => {
+    const fromMenu = menuToNavRoutes(menuList);
+    const settings = { label: "个人设置", href: "/settings" };
+    if (fromMenu.some((n) => n.href === settings.href)) return fromMenu;
+    return [...fromMenu, settings];
+  }, [menuList]);
 
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col border-r border-separator bg-surface/40">
@@ -23,22 +33,8 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 space-y-1 p-3">
-        {siteConfig.navItems.map((item) => {
+        {navItems.map((item) => {
           const active = location.pathname.startsWith(item.href);
-          const disabled = item.disabled;
-
-          if (disabled) {
-            return (
-              <div
-                key={item.href}
-                className="rounded-lg px-3 py-2 text-sm text-muted/60 cursor-not-allowed"
-                title="即将推出"
-              >
-                {item.label}
-              </div>
-            );
-          }
-
           return (
             <Link
               key={item.href}

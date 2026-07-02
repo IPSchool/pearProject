@@ -6,6 +6,7 @@ import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import ProjectListPage from "@/pages/projects/ProjectListPage";
 import ProjectSpacePage from "@/pages/projects/ProjectSpacePage";
+import SettingsPage from "@/pages/settings/SettingsPage";
 import WorkbenchPage from "@/pages/workbench/WorkbenchPage";
 import { GuestRoute, ProtectedRoute } from "@/routes/guards";
 
@@ -24,6 +25,7 @@ function App() {
           <Route element={<WorkbenchPage />} path="/workbench" />
           <Route element={<ProjectListPage />} path="/projects" />
           <Route element={<ProjectSpacePage />} path="/project/:code/tasks" />
+          <Route element={<SettingsPage />} path="/settings" />
         </Route>
       </Route>
 
