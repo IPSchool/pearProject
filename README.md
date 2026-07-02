@@ -2,11 +2,11 @@
 
 **Pear，梨子项目管理系统**
 
+需要配合 [后端接口 pearProjectApi](https://github.com/a54552239/pearProjectApi) 使用。后端 **master** 已升级 ThinkPHP 6 并含 Jira 兼容层；完整文档见 [pearProjectDocs](https://github.com/a54552239/pearProjectDocs)。
+
 **相关资料：https://www.yuque.com/bzsxmz**
 
 **安装指南：https://www.yuque.com/bzsxmz/siuq1w/kggzna**
-
-需要配合[后端接口](https://github.com/a54552239/pearProjectApi)使用，链接：https://github.com/a54552239/pearProjectApi
 
 有不明白的地方的可以加群：275264059，或者联系我，QQ：545522390
 ### 演示地址
