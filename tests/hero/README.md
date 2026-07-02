@@ -33,5 +33,13 @@ bash tests/hero/run.sh
 | HERO-A07 | 创建任务 |
 | HERO-A08 | 任务详情 |
 | HERO-A09 | 列任务列表 |
+| HERO-A10 | 项目成员 |
+| HERO-A11 | 搜索邀请成员 |
+| HERO-A12 | 文件列表 |
+| HERO-A13 | 通知列表 |
+| HERO-A14 | 未读通知 |
+| HERO-A15 | 任务评论 |
+| HERO-A16 | 评论 taskLog |
+| HERO-A17 | 文件上传 |
 
-单元测试：`npm run test:unit`（Vitest，菜单映射、API 工具）。
+单元测试：`npm run test:unit`（Vitest）。

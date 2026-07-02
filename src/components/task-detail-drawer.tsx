@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Button,
   InputGroup,
@@ -8,7 +8,9 @@ import {
   TextField,
 } from "@heroui/react";
 
+import { MemberAvatar } from "@/components/member-avatar";
 import * as taskApi from "@/api/task";
+import type { TaskLogItem } from "@/api/task";
 import type { TaskItem } from "@/types/api";
 
 interface TaskDetailDrawerProps {
@@ -25,24 +27,33 @@ export function TaskDetailDrawer({
   onUpdated,
 }: TaskDetailDrawerProps) {
   const [task, setTask] = useState<TaskItem | null>(null);
+  const [comments, setComments] = useState<TaskLogItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const loadAll = useCallback(async (code: string) => {
+    const [taskData, commentList] = await Promise.all([
+      taskApi.fetchTask(code),
+      taskApi.fetchTaskComments(code),
+    ]);
+    setTask(taskData);
+    setComments(commentList);
+  }, []);
+
   useEffect(() => {
     if (!open || !taskCode) {
       setTask(null);
+      setComments([]);
       return;
     }
     setLoading(true);
     setError(null);
-    taskApi
-      .fetchTask(taskCode)
-      .then(setTask)
+    loadAll(taskCode)
       .catch((e) => setError(e instanceof Error ? e.message : "加载失败"))
       .finally(() => setLoading(false));
-  }, [open, taskCode]);
+  }, [open, taskCode, loadAll]);
 
   async function toggleDone() {
     if (!task) return;
@@ -50,8 +61,7 @@ export function TaskDetailDrawer({
     try {
       await taskApi.markTaskDone(task.code, task.done ? 0 : 1);
       onUpdated();
-      const updated = await taskApi.fetchTask(task.code);
-      setTask(updated);
+      await loadAll(task.code);
     } catch (e) {
       setError(e instanceof Error ? e.message : "更新失败");
     } finally {
@@ -66,6 +76,7 @@ export function TaskDetailDrawer({
       await taskApi.createComment(task.code, comment.trim());
       setComment("");
       onUpdated();
+      await loadAll(task.code);
     } catch (e) {
       setError(e instanceof Error ? e.message : "评论失败");
     } finally {
@@ -98,8 +109,28 @@ export function TaskDetailDrawer({
                 {task.description ? (
                   <p className="text-sm whitespace-pre-wrap">{task.description}</p>
                 ) : null}
+
+                <div>
+                  <p className="text-sm font-medium mb-2">评论 ({comments.length})</p>
+                  <ul className="space-y-2 max-h-40 overflow-y-auto mb-3">
+                    {comments.map((c) => (
+                      <li key={c.id} className="flex gap-2 text-sm">
+                        <MemberAvatar name={c.member_name} src={c.member_avatar} />
+                        <div>
+                          <p className="font-medium">{c.member_name ?? "用户"}</p>
+                          <p className="text-muted">{c.remark || c.content}</p>
+                          <p className="text-xs text-muted">{c.create_time}</p>
+                        </div>
+                      </li>
+                    ))}
+                    {!comments.length ? (
+                      <li className="text-sm text-muted">暂无评论</li>
+                    ) : null}
+                  </ul>
+                </div>
+
                 <TextField name="comment">
-                  <Label>评论</Label>
+                  <Label>添加评论</Label>
                   <InputGroup>
                     <InputGroup.Input
                       placeholder="写下评论..."

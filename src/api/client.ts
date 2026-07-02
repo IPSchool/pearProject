@@ -23,13 +23,17 @@ http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   config.url = joinUrl(config.url ?? "");
 
   if (config.method === "post" && config.data && typeof config.data === "object") {
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(config.data)) {
-      if (value !== undefined && value !== null) {
-        params.append(key, String(value));
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+    } else {
+      const params = new URLSearchParams();
+      for (const [key, value] of Object.entries(config.data)) {
+        if (value !== undefined && value !== null) {
+          params.append(key, String(value));
+        }
       }
+      config.data = params.toString();
     }
-    config.data = params.toString();
   }
 
   if (tokenList?.accessToken) {

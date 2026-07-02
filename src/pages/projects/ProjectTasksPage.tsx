@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
   Button,
   InputGroup,
@@ -16,7 +16,7 @@ import * as taskApi from "@/api/task";
 import { fetchTaskStages } from "@/api/task";
 import type { TaskItem, TaskStage } from "@/types/api";
 
-export default function ProjectSpacePage() {
+export default function ProjectTasksPage() {
   const { code: projectCode = "" } = useParams<{ code: string }>();
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedTask, setSelectedTask] = useState<TaskItem | null>(null);
@@ -57,17 +57,8 @@ export default function ProjectSpacePage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-sm text-muted">
-            <Link className="hover:underline" to="/projects">
-              项目
-            </Link>
-            {" / "}
-            {projectCode}
-          </p>
-          <h2 className="text-2xl font-semibold mt-1">任务看板</h2>
-        </div>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">任务看板</h2>
         <Button onPress={openCreate}>创建任务</Button>
       </div>
 

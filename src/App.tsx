@@ -2,10 +2,14 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import AppLayout from "@/layouts/AppLayout";
 import AuthLayout from "@/layouts/AuthLayout";
+import ProjectLayout from "@/layouts/ProjectLayout";
 import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
+import NotificationsPage from "@/pages/notifications/NotificationsPage";
+import ProjectFilesPage from "@/pages/projects/ProjectFilesPage";
 import ProjectListPage from "@/pages/projects/ProjectListPage";
-import ProjectSpacePage from "@/pages/projects/ProjectSpacePage";
+import ProjectMembersPage from "@/pages/projects/ProjectMembersPage";
+import ProjectTasksPage from "@/pages/projects/ProjectTasksPage";
 import SettingsPage from "@/pages/settings/SettingsPage";
 import WorkbenchPage from "@/pages/workbench/WorkbenchPage";
 import { GuestRoute, ProtectedRoute } from "@/routes/guards";
@@ -24,8 +28,14 @@ function App() {
         <Route element={<AppLayout />}>
           <Route element={<WorkbenchPage />} path="/workbench" />
           <Route element={<ProjectListPage />} path="/projects" />
-          <Route element={<ProjectSpacePage />} path="/project/:code/tasks" />
+          <Route element={<NotificationsPage />} path="/notifications" />
           <Route element={<SettingsPage />} path="/settings" />
+          <Route element={<ProjectLayout />} path="/project/:code">
+            <Route element={<ProjectTasksPage />} path="tasks" />
+            <Route element={<ProjectMembersPage />} path="members" />
+            <Route element={<ProjectFilesPage />} path="files" />
+            <Route element={<Navigate replace to="tasks" />} index />
+          </Route>
         </Route>
       </Route>
 

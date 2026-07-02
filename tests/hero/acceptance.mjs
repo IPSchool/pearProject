@@ -222,6 +222,163 @@ async function main() {
     }
   }
 
+  // --- Phase 3 ---
+  if (projectCode) {
+    try {
+      const members = await post(
+        "project/projectMember/index",
+        { projectCode },
+        { token, org },
+      );
+      const list = members.data?.list ?? [];
+      if (members.code === 200 && Array.isArray(list)) {
+        ok("HERO-A10", `项目成员 (${list.length})`);
+      } else {
+        bad("HERO-A10", "项目成员", `code=${members.code}`);
+      }
+    } catch (e) {
+      bad("HERO-A10", "项目成员", String(e));
+    }
+
+    try {
+      const invite = await post(
+        "project/projectMember/searchInviteMember",
+        { projectCode, keyword: "vil" },
+        { token, org },
+      );
+      if (invite.code === 200) {
+        ok("HERO-A11", "搜索邀请成员");
+      } else {
+        bad("HERO-A11", "搜索邀请成员", `code=${invite.code}`);
+      }
+    } catch (e) {
+      bad("HERO-A11", "搜索邀请成员", String(e));
+    }
+
+    try {
+      const files = await post(
+        "project/file/index",
+        { projectCode, page: 1, pageSize: 10 },
+        { token, org },
+      );
+      if (files.code === 200) {
+        ok("HERO-A12", "文件列表");
+      } else {
+        bad("HERO-A12", "文件列表", `code=${files.code}`);
+      }
+    } catch (e) {
+      bad("HERO-A12", "文件列表", String(e));
+    }
+  }
+
+  try {
+    const notify = await post("project/notify/index", { page: 1, pageSize: 10 }, { token, org });
+    if (notify.code === 200 && notify.data?.list) {
+      ok("HERO-A13", `通知列表 (${notify.data.list.length})`);
+    } else {
+      bad("HERO-A13", "通知列表", `code=${notify.code}`);
+    }
+  } catch (e) {
+    bad("HERO-A13", "通知列表", String(e));
+  }
+
+  try {
+    const unread = await post("project/notify/noReads", {}, { token, org });
+    if (unread.code === 200) {
+      ok("HERO-A14", "未读通知统计");
+    } else {
+      bad("HERO-A14", "未读通知统计", `code=${unread.code}`);
+    }
+  } catch (e) {
+    bad("HERO-A14", "未读通知统计", String(e));
+  }
+
+  if (taskCode) {
+    try {
+      const c = await post(
+        "project/task/createComment",
+        { taskCode, comment: "hero phase3 comment" },
+        { token, org },
+      );
+      if (c.code === 200) {
+        ok("HERO-A15", "任务评论");
+        const logs = await post(
+          "project/task/taskLog",
+          { taskCode, comment: 1, page: 1, pageSize: 20 },
+          { token, org },
+        );
+        if (logs.code === 200) {
+          ok("HERO-A16", "评论列表 taskLog");
+        } else {
+          bad("HERO-A16", "评论列表", `code=${logs.code}`);
+        }
+      } else {
+        bad("HERO-A15", "任务评论", c.msg || String(c.code));
+      }
+    } catch (e) {
+      bad("HERO-A15", "任务评论", String(e));
+    }
+
+    if (projectCode) {
+      try {
+        const boundary = "----HeroBoundary";
+        const body = [
+          `--${boundary}`,
+          'Content-Disposition: form-data; name="identifier"',
+          "",
+          "hero-file-id",
+          `--${boundary}`,
+          'Content-Disposition: form-data; name="filename"',
+          "",
+          "hero.txt",
+          `--${boundary}`,
+          'Content-Disposition: form-data; name="chunkNumber"',
+          "",
+          "1",
+          `--${boundary}`,
+          'Content-Disposition: form-data; name="totalChunks"',
+          "",
+          "1",
+          `--${boundary}`,
+          'Content-Disposition: form-data; name="totalSize"',
+          "",
+          "11",
+          `--${boundary}`,
+          'Content-Disposition: form-data; name="projectCode"',
+          "",
+          projectCode,
+          `--${boundary}`,
+          'Content-Disposition: form-data; name="file"; filename="hero.txt"',
+          "Content-Type: text/plain",
+          "",
+          "hello hero",
+          `--${boundary}--`,
+          "",
+        ].join("\r\n");
+
+        const res = await fetch(`${BASE}/project/file/uploadFiles`, {
+          method: "POST",
+          headers: {
+            "Content-Type": `multipart/form-data; boundary=${boundary}`,
+            Authorization: `Bearer ${token}`,
+            organizationCode: org,
+          },
+          body,
+        });
+        const upload = await res.json();
+        upload.code = Number(upload.code);
+        const hasUrl = Boolean(upload.data?.url || upload.data?.key);
+        if (upload.code === 200 && hasUrl) {
+          ok("HERO-A17", "文件上传");
+        } else {
+          bad("HERO-A17", "文件上传", JSON.stringify(upload).slice(0, 120));
+        }
+      } catch (e) {
+        bad("HERO-A17", "文件上传", String(e));
+      }
+    }
+  }
+
   summary();
   process.exit(failed ? 1 : 0);
 }

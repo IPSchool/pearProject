@@ -17,9 +17,15 @@ export function AppSidebar() {
 
   const navItems = useMemo(() => {
     const fromMenu = menuToNavRoutes(menuList);
-    const settings = { label: "个人设置", href: "/settings" };
-    if (fromMenu.some((n) => n.href === settings.href)) return fromMenu;
-    return [...fromMenu, settings];
+    const extras = [
+      { label: "通知", href: "/notifications" },
+      { label: "个人设置", href: "/settings" },
+    ];
+    const merged = [...fromMenu];
+    for (const item of extras) {
+      if (!merged.some((n) => n.href === item.href)) merged.push(item);
+    }
+    return merged;
   }, [menuList]);
 
   return (

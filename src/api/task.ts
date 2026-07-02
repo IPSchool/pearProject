@@ -78,3 +78,26 @@ export async function createComment(taskCode: string, comment: string) {
     throw new Error(res.msg || "评论失败");
   }
 }
+
+export interface TaskLogItem {
+  id: number;
+  content: string;
+  remark?: string;
+  is_comment?: number;
+  create_time: string;
+  member_name?: string;
+  member_avatar?: string;
+}
+
+export async function fetchTaskComments(taskCode: string) {
+  const res = await post<{ list: TaskLogItem[]; total: number }>("project/task/taskLog", {
+    taskCode,
+    comment: 1,
+    page: 1,
+    pageSize: 50,
+  });
+  if (!isOk(res)) {
+    throw new Error(res.msg || "获取评论失败");
+  }
+  return res.data.list ?? [];
+}
