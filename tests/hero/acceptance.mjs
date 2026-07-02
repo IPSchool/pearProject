@@ -379,6 +379,155 @@ async function main() {
     }
   }
 
+  // --- Phase 4 ---
+  if (projectCode) {
+    let featuresCode = "";
+    try {
+      const featList = await post("project/projectFeatures/index", { projectCode }, { token, org });
+      if (featList.code === 200 && Array.isArray(featList.data)) {
+        ok("HERO-A18", `版本库列表 (${featList.data.length})`);
+        featuresCode = featList.data[0]?.code ?? "";
+      } else {
+        bad("HERO-A18", "版本库列表", `code=${featList.code}`);
+      }
+
+      const featSave = await post(
+        "project/projectFeatures/save",
+        { projectCode, name: `Hero-feat-${Date.now()}`, description: "phase4" },
+        { token, org },
+      );
+      if (featSave.code === 200 && featSave.data?.code) {
+        featuresCode = featSave.data.code;
+        ok("HERO-A19", "创建版本库");
+      } else {
+        bad("HERO-A19", "创建版本库", featSave.msg || String(featSave.code));
+      }
+
+      if (featuresCode) {
+        const versions = await post(
+          "project/projectVersion/index",
+          { projectFeaturesCode: featuresCode },
+          { token, org },
+        );
+        if (versions.code === 200) {
+          ok("HERO-A20", "版本列表");
+        } else {
+          bad("HERO-A20", "版本列表", `code=${versions.code}`);
+        }
+
+        const createdVer = await post(
+          "project/projectVersion/save",
+          {
+            featuresCode,
+            name: `Hero-v-${Date.now()}`,
+            description: "phase4",
+            startTime: "",
+          },
+          { token, org },
+        );
+        const versionCode = createdVer.data?.code ?? "";
+        if (createdVer.code === 200 && versionCode) {
+          ok("HERO-A21", "创建版本");
+          const verRead = await post(
+            "project/projectVersion/read",
+            { versionCode },
+            { token, org },
+          );
+          if (verRead.code === 200) {
+            ok("HERO-A22", "版本详情");
+          } else {
+            bad("HERO-A22", "版本详情", `code=${verRead.code}`);
+          }
+        } else {
+          bad("HERO-A21", "创建版本", createdVer.msg || String(createdVer.code));
+        }
+      }
+    } catch (e) {
+      bad("HERO-A18", "版本", String(e));
+    }
+
+    try {
+      const wf = await post("project/taskWorkflow/index", { projectCode }, { token, org });
+      if (wf.code === 200) {
+        ok("HERO-A23", "工作流列表");
+      } else {
+        bad("HERO-A23", "工作流列表", `code=${wf.code}`);
+      }
+      const rules = await post(
+        "project/taskWorkflow/_getTaskWorkflowRules",
+        { projectCode },
+        { token, org },
+      );
+      if (rules.code === 200) {
+        ok("HERO-A24", "工作流规则");
+      } else {
+        bad("HERO-A24", "工作流规则", `code=${rules.code}`);
+      }
+    } catch (e) {
+      bad("HERO-A23", "工作流", String(e));
+    }
+  }
+
+  try {
+    const tpl = await post("project/projectTemplate/index", { page: 1, pageSize: 10 }, { token, org });
+    if (tpl.code === 200) {
+      ok("HERO-A25", "项目模板列表");
+    } else {
+      bad("HERO-A25", "项目模板列表", `code=${tpl.code}`);
+    }
+    const tplSave = await post(
+      "project/projectTemplate/save",
+      { name: `Hero-tpl-${Date.now()}`, description: "phase4" },
+      { token, org },
+    );
+    if (tplSave.code === 200) {
+      ok("HERO-A26", "创建模板");
+    } else {
+      bad("HERO-A26", "创建模板", tplSave.msg || String(tplSave.code));
+    }
+  } catch (e) {
+    bad("HERO-A25", "项目模板", String(e));
+  }
+
+  try {
+    const orgs = await post("project/organization/index", { page: 1, pageSize: 10 }, { token, org });
+    if (orgs.code === 200) {
+      ok("HERO-A27", "组织列表");
+    } else {
+      bad("HERO-A27", "组织列表", `code=${orgs.code}`);
+    }
+    const depts = await post("project/department/index", { page: 1, pageSize: 10 }, { token, org });
+    if (depts.code === 200) {
+      ok("HERO-A28", "部门列表");
+    } else {
+      bad("HERO-A28", "部门列表", `code=${depts.code}`);
+    }
+    const roles = await post("project/auth/index", { page: 1, pageSize: 10 }, { token, org });
+    if (roles.code === 200) {
+      ok("HERO-A29", "角色列表");
+    } else {
+      bad("HERO-A29", "角色列表", `code=${roles.code}`);
+    }
+    const accounts = await post("project/account/index", { page: 1, pageSize: 10 }, { token, org });
+    if (accounts.code === 200) {
+      ok("HERO-A30", "成员账户");
+    } else {
+      bad("HERO-A30", "成员账户", `code=${accounts.code}`);
+    }
+    const deptMembers = await post(
+      "project/departmentMember/index",
+      { page: 1, pageSize: 10 },
+      { token, org },
+    );
+    if (deptMembers.code === 200) {
+      ok("HERO-A31", "部门成员");
+    } else {
+      bad("HERO-A31", "部门成员", `code=${deptMembers.code}`);
+    }
+  } catch (e) {
+    bad("HERO-A27", "团队管理", String(e));
+  }
+
   summary();
   process.exit(failed ? 1 : 0);
 }

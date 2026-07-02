@@ -18,6 +18,8 @@ export function AppSidebar() {
   const navItems = useMemo(() => {
     const fromMenu = menuToNavRoutes(menuList);
     const extras = [
+      { label: "项目模板", href: "/templates" },
+      { label: "团队管理", href: "/team/organizations" },
       { label: "通知", href: "/notifications" },
       { label: "个人设置", href: "/settings" },
     ];

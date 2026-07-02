@@ -56,7 +56,11 @@ src/
 ├── pages/         # 按产品域划分
 │   ├── auth/
 │   ├── workbench/
-│   └── projects/
+│   ├── projects/
+│   ├── templates/
+│   ├── team/
+│   ├── notifications/
+│   └── settings/
 ├── routes/        # 路由守卫
 ├── stores/        # Zustand
 └── types/         # API 类型
@@ -70,13 +74,13 @@ src/
 | **1** | 注册、资料、组织切换、动态菜单 | ✅ |
 | **2** | 看板（列/卡片/拖拽）、任务详情、创建任务 | ✅ |
 | **3** | 成员、文件、评论、通知 | ✅ |
-| **4** | 版本、模板、工作流、团队/RBAC | 待做 |
+| **4** | 版本、模板、工作流、团队/RBAC | ✅ |
 | **5** | 日程、WebSocket、图表 | 待做 |
 
 ## 验收
 
 ```bash
-bash tests/hero/run.sh   # API 验收 17 项 + Vitest 单元测试
+bash tests/hero/run.sh   # API 验收 31 项 + Vitest 单元测试
 npm run build
 ```
 

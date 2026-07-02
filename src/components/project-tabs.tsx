@@ -5,6 +5,8 @@ const tabs = [
   { key: "tasks", label: "看板", suffix: "/tasks" },
   { key: "members", label: "成员", suffix: "/members" },
   { key: "files", label: "文件", suffix: "/files" },
+  { key: "versions", label: "版本", suffix: "/versions" },
+  { key: "workflow", label: "工作流", suffix: "/workflow" },
 ] as const;
 
 export function ProjectTabs() {
