@@ -1,70 +1,53 @@
 {
-  "name": "pear-project",
-  "version": "2.0.0",
+  "name": "pear-project-hero",
   "private": true,
+  "version": "3.0.0-alpha.0",
+  "type": "module",
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint --fix",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "ant-design-vue": "^1.7.8",
-    "axios": "^0.21.1",
-    "core-js": "^2.6.9",
-    "dingtalk-jsapi": "^2.7.6",
-    "echarts": "^4.2.0-rc.1",
-    "jquery": "^3.4.1",
-    "lodash": "^4.17.11",
-    "md5": "^2.2.1",
-    "moment": "^2.22.2",
-    "v-charts": "^1.17.10",
-    "vue": "^2.5.17",
-    "vue-clipboards": "^1.2.4",
-    "vue-cropper": "^0.4.7",
-    "vue-router": "^3.0.1",
-    "vue-simple-uploader": "^0.5.6",
-    "vuedraggable": "^2.17.0",
-    "vuescroll": "^4.6.24",
-    "vuex": "^3.0.1",
-    "wangeditor": "^3.1.1"
+    "@heroui/react": "3.2.1",
+    "@heroui/styles": "3.2.1",
+    "axios": "^1.9.0",
+    "clsx": "2.1.1",
+    "md5": "^2.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "6.23.0",
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^3.2.0",
-    "@vue/cli-plugin-eslint": "^3.2.0",
-    "@vue/cli-service": "^3.8.4",
-    "babel-eslint": "^10.0.1",
-    "babel-plugin-import": "^1.11.0",
-    "eslint": "^5.8.0",
-    "eslint-plugin-vue": "^5.0.0-0",
-    "less": "~3.9.0",
-    "less-loader": "^4.1.0",
-    "vue-template-compiler": "^2.5.17"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/essential",
-      "eslint:recommended"
-    ],
-    "rules": {
-      "vue/no-unused-components": "off",
-      "vue/no-unused-vars": "off"
-    },
-    "parserOptions": {
-      "parser": "babel-eslint"
-    }
-  },
-  "postcss": {
-    "plugins": {
-      "autoprefixer": {}
-    }
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not ie <= 8"
-  ]
+    "@eslint/compat": "1.2.8",
+    "@eslint/eslintrc": "3.3.1",
+    "@eslint/js": "9.25.1",
+    "@tailwindcss/postcss": "4.3.1",
+    "@tailwindcss/vite": "4.3.1",
+    "@types/md5": "^2.3.5",
+    "@types/node": "22.12.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@typescript-eslint/eslint-plugin": "8.31.1",
+    "@typescript-eslint/parser": "8.31.1",
+    "@vitejs/plugin-react": "6.0.2",
+    "eslint": "9.25.1",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-import": "2.31.0",
+    "eslint-plugin-jsx-a11y": "6.10.2",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-prettier": "5.2.1",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "5.2.0",
+    "eslint-plugin-unused-imports": "4.1.4",
+    "globals": "16.0.0",
+    "postcss": "8.5.15",
+    "prettier": "3.5.3",
+    "tailwind-variants": "3.2.2",
+    "tailwindcss": "4.3.1",
+    "typescript": "5.6.3",
+    "vite": "8.0.16"
+  }
 }
