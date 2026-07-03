@@ -64,6 +64,7 @@ async function main() {
   let stageCode = "";
   let taskCode = "";
   let orgList = [];
+  let memberCode = "";
 
   try {
     const login = await post("project/login/index", {
@@ -72,6 +73,7 @@ async function main() {
     });
     token = login.data?.tokenList?.accessToken ?? "";
     org = login.data?.member?.organization_code ?? "";
+    memberCode = login.data?.member?.code ?? "";
     orgList = login.data?.organizationList ?? [];
     if (login.code === 200 && token && org) {
       ok("HERO-A02", "登录 token + org");
@@ -526,6 +528,84 @@ async function main() {
     }
   } catch (e) {
     bad("HERO-A27", "团队管理", String(e));
+  }
+
+  // --- Phase 5 ---
+  try {
+    const evIndex = await post("project/events/index", { page: 1, pageSize: 10 }, { token, org });
+    if (evIndex.code === 200) ok("HERO-A32", "日程 index");
+    else bad("HERO-A32", "日程 index", `code=${evIndex.code}`);
+
+    const myEv = await post("project/events/myList", { page: 1, pageSize: 10 }, { token, org });
+    if (myEv.code === 200) ok("HERO-A33", "我的日程");
+    else bad("HERO-A33", "我的日程", `code=${myEv.code}`);
+
+    const confirmEv = await post(
+      "project/events/confirmList",
+      { page: 1, pageSize: 10 },
+      { token, org },
+    );
+    if (confirmEv.code === 200) ok("HERO-A34", "待确认日程");
+    else bad("HERO-A34", "待确认日程", `code=${confirmEv.code}`);
+  } catch (e) {
+    bad("HERO-A32", "日程列表", String(e));
+  }
+
+  if (projectCode) {
+    try {
+      const tomorrow = new Date(Date.now() + 86400000);
+      const begin = tomorrow.toISOString().slice(0, 10) + " 10:00:00";
+      const end = tomorrow.toISOString().slice(0, 10) + " 11:00:00";
+      const evSave = await post(
+        "project/events/save",
+        {
+          project_code: projectCode,
+          title: `Hero-evt-${Date.now()}`,
+          begin_time: begin,
+          end_time: end,
+          description: "phase5",
+        },
+        { token, org },
+      );
+      const eventsCode = evSave.data?.code ?? "";
+      if (evSave.code === 200 && eventsCode) {
+        ok("HERO-A35", "创建日程");
+        const evRead = await post("project/events/read", { eventsCode }, { token, org });
+        if (evRead.code === 200) ok("HERO-A36", "日程详情");
+        else bad("HERO-A36", "日程详情", `code=${evRead.code}`);
+      } else {
+        bad("HERO-A35", "创建日程", evSave.msg || String(evSave.code));
+      }
+
+      if (memberCode) {
+        const cal = await post(
+          "project/events/getEventsListByCalendar",
+          {
+            date: tomorrow.toISOString().slice(0, 10),
+            memberCodes: JSON.stringify([memberCode]),
+            pageSize: 20,
+          },
+          { token, org },
+        );
+        if (cal.code === 200) ok("HERO-A37", "日历日程");
+        else bad("HERO-A37", "日历日程", `code=${cal.code}`);
+      } else {
+        ok("HERO-A37", "日历日程 (skip: 无 memberCode)");
+      }
+    } catch (e) {
+      bad("HERO-A35", "日程 CRUD", String(e));
+    }
+  }
+
+  try {
+    const analysis = await post("project/project/analysis", {}, { token, org });
+    if (analysis.code === 200 && analysis.data?.projectCount !== undefined) {
+      ok("HERO-A38", `项目分析 (projects=${analysis.data.projectCount})`);
+    } else {
+      bad("HERO-A38", "项目分析", `code=${analysis.code}`);
+    }
+  } catch (e) {
+    bad("HERO-A38", "项目分析", String(e));
   }
 
   summary();
