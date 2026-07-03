@@ -10,7 +10,7 @@ import {
 
 import { MemberAvatar } from "@/components/member-avatar";
 import * as taskApi from "@/api/task";
-import type { TaskLogItem } from "@/api/task";
+import type { TaskLogItem, TaskWorkTimeItem } from "@/api/task";
 import type { TaskItem } from "@/types/api";
 
 interface TaskDetailDrawerProps {
@@ -28,24 +28,31 @@ export function TaskDetailDrawer({
 }: TaskDetailDrawerProps) {
   const [task, setTask] = useState<TaskItem | null>(null);
   const [comments, setComments] = useState<TaskLogItem[]>([]);
+  const [workTimes, setWorkTimes] = useState<TaskWorkTimeItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [comment, setComment] = useState("");
+  const [wtNum, setWtNum] = useState("60");
+  const [wtContent, setWtContent] = useState("");
+  const [wtBegin, setWtBegin] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadAll = useCallback(async (code: string) => {
-    const [taskData, commentList] = await Promise.all([
+    const [taskData, commentList, wtList] = await Promise.all([
       taskApi.fetchTask(code),
       taskApi.fetchTaskComments(code),
+      taskApi.fetchTaskWorkTimes(code),
     ]);
     setTask(taskData);
     setComments(commentList);
+    setWorkTimes(wtList);
   }, []);
 
   useEffect(() => {
     if (!open || !taskCode) {
       setTask(null);
       setComments([]);
+      setWorkTimes([]);
       return;
     }
     setLoading(true);
@@ -84,6 +91,26 @@ export function TaskDetailDrawer({
     }
   }
 
+  async function submitWorkTime() {
+    if (!task || !wtNum.trim() || !wtBegin.trim()) return;
+    setSubmitting(true);
+    try {
+      await taskApi.saveTaskWorkTime(
+        task.code,
+        Number(wtNum),
+        wtContent.trim(),
+        wtBegin.trim(),
+      );
+      setWtContent("");
+      onUpdated();
+      await loadAll(task.code);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "登记工时失败");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <Modal.Backdrop isOpen={open} onOpenChange={(v) => !v && onClose()}>
       <Modal.Container size="lg">
@@ -109,6 +136,59 @@ export function TaskDetailDrawer({
                 {task.description ? (
                   <p className="text-sm whitespace-pre-wrap">{task.description}</p>
                 ) : null}
+
+                <div>
+                  <p className="text-sm font-medium mb-2">工时 ({workTimes.length})</p>
+                  <ul className="space-y-1 text-sm mb-3 max-h-28 overflow-y-auto">
+                    {workTimes.map((w, i) => (
+                      <li key={w.id ?? i} className="text-muted">
+                        {w.begin_time} · {w.work_time ?? w.num ?? "—"} 分钟 — {w.content || "—"}
+                      </li>
+                    ))}
+                    {!workTimes.length ? (
+                      <li className="text-muted">暂无工时记录</li>
+                    ) : null}
+                  </ul>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    <TextField name="wtNum">
+                      <Label>分钟</Label>
+                      <InputGroup>
+                        <InputGroup.Input
+                          value={wtNum}
+                          onChange={(e) => setWtNum(e.target.value)}
+                        />
+                      </InputGroup>
+                    </TextField>
+                    <TextField className="sm:col-span-2" name="wtBegin">
+                      <Label>开始时间</Label>
+                      <InputGroup>
+                        <InputGroup.Input
+                          placeholder="2030-01-01 09:00:00"
+                          value={wtBegin}
+                          onChange={(e) => setWtBegin(e.target.value)}
+                        />
+                      </InputGroup>
+                    </TextField>
+                  </div>
+                  <TextField className="mt-2" name="wtContent">
+                    <Label>说明</Label>
+                    <InputGroup>
+                      <InputGroup.Input
+                        value={wtContent}
+                        onChange={(e) => setWtContent(e.target.value)}
+                      />
+                    </InputGroup>
+                  </TextField>
+                  <Button
+                    className="mt-2"
+                    isPending={submitting}
+                    size="sm"
+                    variant="secondary"
+                    onPress={submitWorkTime}
+                  >
+                    登记工时
+                  </Button>
+                </div>
 
                 <div>
                   <p className="text-sm font-medium mb-2">评论 ({comments.length})</p>

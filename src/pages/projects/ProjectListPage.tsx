@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card, Spinner } from "@heroui/react";
 
+import * as archiveApi from "@/api/archive";
 import { setProjectCollect } from "@/api/collect";
 import { fetchSelfProjects } from "@/api/project";
 import type { ProjectSummary } from "@/types/api";
@@ -11,6 +12,7 @@ export default function ProjectListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [collecting, setCollecting] = useState<string | null>(null);
+  const [archiving, setArchiving] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSelfProjects(1, 50)
@@ -31,6 +33,18 @@ export default function ProjectListPage() {
       setError(err instanceof Error ? err.message : "收藏失败");
     } finally {
       setCollecting(null);
+    }
+  }
+
+  async function handleArchive(project: ProjectSummary) {
+    setArchiving(project.code);
+    try {
+      await archiveApi.archiveProject(project.code);
+      setProjects((prev) => prev.filter((p) => p.code !== project.code));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "归档失败");
+    } finally {
+      setArchiving(null);
     }
   }
 
@@ -75,6 +89,16 @@ export default function ProjectListPage() {
                   {project.description || "暂无简介"}
                 </p>
               </Link>
+              <div className="px-4 pb-4">
+                <Button
+                  isPending={archiving === project.code}
+                  size="sm"
+                  variant="tertiary"
+                  onPress={() => handleArchive(project)}
+                >
+                  归档
+                </Button>
+              </div>
             </Card>
           ))}
           {!projects.length ? (

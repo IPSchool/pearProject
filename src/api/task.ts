@@ -115,6 +115,8 @@ export async function searchTasks(keyword: string, projectCode?: string, page = 
 
 export interface TaskWorkTimeItem {
   id?: number;
+  code?: string;
+  num?: number;
   work_time?: number;
   content?: string;
   begin_time?: string;

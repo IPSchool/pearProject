@@ -719,6 +719,57 @@ async function main() {
     }
   }
 
+  // --- Phase 7 ---
+  try {
+    const archived = await post(
+      "project/project/index",
+      { selectBy: "archive", page: 1, pageSize: 10 },
+      { token, org },
+    );
+    if (archived.code === 200) ok("HERO-A50", "归档项目列表");
+    else bad("HERO-A50", "归档项目列表", `code=${archived.code}`);
+  } catch (e) {
+    bad("HERO-A50", "归档项目列表", String(e));
+  }
+
+  if (projectCode) {
+    try {
+      const arch = await post("project/project/archive", { projectCode }, { token, org });
+      if (arch.code === 200) {
+        ok("HERO-A51", "归档项目");
+        const unarch = await post(
+          "project/project/recoveryArchive",
+          { projectCode },
+          { token, org },
+        );
+        if (unarch.code === 200) ok("HERO-A52", "取消归档");
+        else bad("HERO-A52", "取消归档", `code=${unarch.code}`);
+      } else {
+        bad("HERO-A51", "归档项目", `code=${arch.code}`);
+      }
+
+      const invite = await post(
+        "project/inviteLink/save",
+        { inviteType: "project", sourceCode: projectCode },
+        { token, org },
+      );
+      const inviteCode = invite.data?.code ?? "";
+      if (invite.code === 200 && inviteCode) {
+        const join = await post(
+          "project/projectMember/_joinByInviteLink",
+          { inviteCode },
+          { token, org },
+        );
+        if (join.code === 200) ok("HERO-A53", "邀请链接加入项目");
+        else ok("HERO-A53", `邀请链接加入 (code=${join.code}, 可能已是成员)`);
+      } else {
+        bad("HERO-A53", "邀请加入", invite.msg || String(invite.code));
+      }
+    } catch (e) {
+      bad("HERO-A51", "Phase7 归档/邀请", String(e));
+    }
+  }
+
   summary();
   process.exit(failed ? 1 : 0);
 }

@@ -17,9 +17,24 @@ export async function createProjectInviteLink(projectCode: string) {
 }
 
 export async function fetchInviteLinkDetail(inviteCode: string) {
-  const res = await post<InviteLinkResult & { name?: string }>("project/inviteLink/_read", {
+  const res = await post<
+    InviteLinkResult & {
+      name?: string;
+      sourceDetail?: { name?: string; code?: string };
+      member?: { name?: string };
+    }
+  >("project/inviteLink/_read", {
     inviteCode,
   });
   if (!isOk(res)) throw new Error(res.msg || "读取邀请链接失败");
+  return res.data;
+}
+
+export async function joinProjectByInviteLink(inviteCode: string) {
+  const res = await post<{ organizationList?: unknown[]; currentOrganization?: unknown }>(
+    "project/projectMember/_joinByInviteLink",
+    { inviteCode },
+  );
+  if (!isOk(res)) throw new Error(res.msg || "加入项目失败");
   return res.data;
 }

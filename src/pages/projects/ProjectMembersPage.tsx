@@ -79,11 +79,16 @@ export default function ProjectMembersPage() {
           生成邀请链接
         </Button>
       </div>
-      {inviteCode ? (
+        {inviteCode ? (
         <Card className="p-4 bg-accent/5">
           <p className="text-sm font-medium">邀请码</p>
           <p className="font-mono text-sm mt-1 break-all">{inviteCode}</p>
-          <p className="text-xs text-muted mt-2">对接 `inviteLink/save`，有效期 24 小时</p>
+          <p className="text-xs text-muted mt-2">
+            落地页：{" "}
+            <a className="text-accent hover:underline" href={`/invite/${inviteCode}`}>
+              /invite/{inviteCode}
+            </a>
+          </p>
         </Card>
       ) : null}
       {error ? <p className="text-danger text-sm">{error}</p> : null}

@@ -4,7 +4,9 @@ import AppLayout from "@/layouts/AppLayout";
 import AuthLayout from "@/layouts/AuthLayout";
 import ProjectLayout from "@/layouts/ProjectLayout";
 import TeamLayout from "@/layouts/TeamLayout";
+import ArchivePage from "@/pages/archive/ArchivePage";
 import AnalyticsPage from "@/pages/analytics/AnalyticsPage";
+import InviteLandingPage from "@/pages/invite/InviteLandingPage";
 import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import EventsPage from "@/pages/events/EventsPage";
@@ -29,6 +31,8 @@ import { GuestRoute, ProtectedRoute } from "@/routes/guards";
 function App() {
   return (
     <Routes>
+      <Route element={<InviteLandingPage />} path="/invite/:code" />
+
       <Route element={<GuestRoute />}>
         <Route element={<AuthLayout />}>
           <Route element={<LoginPage />} path="/member/login" />
@@ -43,6 +47,7 @@ function App() {
           <Route element={<AnalyticsPage />} path="/analytics" />
           <Route element={<SearchPage />} path="/search" />
           <Route element={<RecycleBinPage />} path="/recycle" />
+          <Route element={<ArchivePage />} path="/archive" />
           <Route element={<ProjectListPage />} path="/projects" />
           <Route element={<TemplateListPage />} path="/templates" />
           <Route element={<NotificationsPage />} path="/notifications" />

@@ -20,6 +20,7 @@ export function AppSidebar() {
     const extras = [
       { label: "任务搜索", href: "/search" },
       { label: "回收站", href: "/recycle" },
+      { label: "归档", href: "/archive" },
       { label: "日程", href: "/events" },
       { label: "数据分析", href: "/analytics" },
       { label: "项目模板", href: "/templates" },
