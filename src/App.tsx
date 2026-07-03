@@ -8,6 +8,8 @@ import AnalyticsPage from "@/pages/analytics/AnalyticsPage";
 import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import EventsPage from "@/pages/events/EventsPage";
+import RecycleBinPage from "@/pages/recycle/RecycleBinPage";
+import SearchPage from "@/pages/search/SearchPage";
 import NotificationsPage from "@/pages/notifications/NotificationsPage";
 import ProjectFilesPage from "@/pages/projects/ProjectFilesPage";
 import ProjectListPage from "@/pages/projects/ProjectListPage";
@@ -39,6 +41,8 @@ function App() {
           <Route element={<WorkbenchPage />} path="/workbench" />
           <Route element={<EventsPage />} path="/events" />
           <Route element={<AnalyticsPage />} path="/analytics" />
+          <Route element={<SearchPage />} path="/search" />
+          <Route element={<RecycleBinPage />} path="/recycle" />
           <Route element={<ProjectListPage />} path="/projects" />
           <Route element={<TemplateListPage />} path="/templates" />
           <Route element={<NotificationsPage />} path="/notifications" />

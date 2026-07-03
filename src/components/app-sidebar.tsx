@@ -18,6 +18,8 @@ export function AppSidebar() {
   const navItems = useMemo(() => {
     const fromMenu = menuToNavRoutes(menuList);
     const extras = [
+      { label: "任务搜索", href: "/search" },
+      { label: "回收站", href: "/recycle" },
       { label: "日程", href: "/events" },
       { label: "数据分析", href: "/analytics" },
       { label: "项目模板", href: "/templates" },

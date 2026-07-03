@@ -55,6 +55,7 @@ export interface ProjectSummary {
   cover?: string;
   archive?: number;
   deleted?: number;
+  collected?: number;
 }
 
 export interface TaskStage {

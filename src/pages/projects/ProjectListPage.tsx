@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Card, Spinner } from "@heroui/react";
+import { Button, Card, Spinner } from "@heroui/react";
 
+import { setProjectCollect } from "@/api/collect";
 import { fetchSelfProjects } from "@/api/project";
 import type { ProjectSummary } from "@/types/api";
 
@@ -9,6 +10,7 @@ export default function ProjectListPage() {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [collecting, setCollecting] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSelfProjects(1, 50)
@@ -16,6 +18,21 @@ export default function ProjectListPage() {
       .catch((err) => setError(err instanceof Error ? err.message : "加载失败"))
       .finally(() => setLoading(false));
   }, []);
+
+  async function toggleCollect(project: ProjectSummary) {
+    setCollecting(project.code);
+    try {
+      const next = !project.collected;
+      await setProjectCollect(project.code, next);
+      setProjects((prev) =>
+        prev.map((p) => (p.code === project.code ? { ...p, collected: next ? 1 : 0 } : p)),
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "收藏失败");
+    } finally {
+      setCollecting(null);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -33,30 +50,35 @@ export default function ProjectListPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => (
-            <Link key={project.code} to={`/project/${project.code}/tasks`}>
-              <Card className="overflow-hidden hover:shadow-md transition-shadow h-full">
-                {project.cover ? (
-                  <img
-                    alt=""
-                    className="h-28 w-full object-cover"
-                    src={project.cover}
-                  />
-                ) : (
-                  <div className="h-28 bg-accent/10" />
-                )}
-                <div className="p-4">
-                  <p className="font-semibold">{project.name}</p>
-                  <p className="text-sm text-muted mt-1 line-clamp-2">
-                    {project.description || "暂无简介"}
-                  </p>
-                </div>
-              </Card>
-            </Link>
+            <Card key={project.code} className="overflow-hidden hover:shadow-md transition-shadow h-full">
+              <div className="relative">
+                <Link to={`/project/${project.code}/tasks`}>
+                  {project.cover ? (
+                    <img alt="" className="h-28 w-full object-cover" src={project.cover} />
+                  ) : (
+                    <div className="h-28 bg-accent/10" />
+                  )}
+                </Link>
+                <Button
+                  className="absolute top-2 right-2 min-w-0 px-2"
+                  isPending={collecting === project.code}
+                  size="sm"
+                  variant="tertiary"
+                  onPress={() => toggleCollect(project)}
+                >
+                  {project.collected ? "★" : "☆"}
+                </Button>
+              </div>
+              <Link className="block p-4" to={`/project/${project.code}/tasks`}>
+                <p className="font-semibold">{project.name}</p>
+                <p className="text-sm text-muted mt-1 line-clamp-2">
+                  {project.description || "暂无简介"}
+                </p>
+              </Link>
+            </Card>
           ))}
           {!projects.length ? (
-            <Card className="p-8 col-span-full text-center text-muted">
-              暂无项目
-            </Card>
+            <Card className="p-8 col-span-full text-center text-muted">暂无项目</Card>
           ) : null}
         </div>
       )}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
+  Button,
   Card,
   Chip,
   InputGroup,
@@ -8,6 +9,7 @@ import {
   TextField,
 } from "@heroui/react";
 
+import * as inviteApi from "@/api/invite";
 import * as memberApi from "@/api/member";
 import type { ProjectMember } from "@/api/member";
 import { MemberAvatar } from "@/components/member-avatar";
@@ -20,6 +22,8 @@ export default function ProjectMembersPage() {
   const [searchResults, setSearchResults] = useState<ProjectMember[]>([]);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
     memberApi
@@ -46,6 +50,19 @@ export default function ProjectMembersPage() {
     }
   }
 
+  async function handleCreateInvite() {
+    setInviting(true);
+    setError(null);
+    try {
+      const link = await inviteApi.createProjectInviteLink(projectCode);
+      setInviteCode(link.code);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "生成邀请链接失败");
+    } finally {
+      setInviting(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center py-16">
@@ -56,7 +73,19 @@ export default function ProjectMembersPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">项目成员</h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-xl font-semibold">项目成员</h2>
+        <Button isPending={inviting} size="sm" onPress={handleCreateInvite}>
+          生成邀请链接
+        </Button>
+      </div>
+      {inviteCode ? (
+        <Card className="p-4 bg-accent/5">
+          <p className="text-sm font-medium">邀请码</p>
+          <p className="font-mono text-sm mt-1 break-all">{inviteCode}</p>
+          <p className="text-xs text-muted mt-2">对接 `inviteLink/save`，有效期 24 小时</p>
+        </Card>
+      ) : null}
       {error ? <p className="text-danger text-sm">{error}</p> : null}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

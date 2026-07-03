@@ -608,6 +608,117 @@ async function main() {
     bad("HERO-A38", "项目分析", String(e));
   }
 
+  // --- Phase 6 ---
+  try {
+    const deleted = await post(
+      "project/project/index",
+      { selectBy: "deleted", page: 1, pageSize: 10 },
+      { token, org },
+    );
+    if (deleted.code === 200) ok("HERO-A39", "回收站项目列表");
+    else bad("HERO-A39", "回收站项目列表", `code=${deleted.code}`);
+  } catch (e) {
+    bad("HERO-A39", "回收站项目列表", String(e));
+  }
+
+  if (projectCode) {
+    try {
+      const kw = await post(
+        "project/task/index",
+        { projectCode, keyword: "Hero", page: 1, pageSize: 10 },
+        { token, org },
+      );
+      if (kw.code === 200) ok("HERO-A40", "任务关键词搜索");
+      else bad("HERO-A40", "任务关键词搜索", `code=${kw.code}`);
+
+      const delTasks = await post(
+        "project/task/index",
+        { projectCode, deleted: 1, page: 1, pageSize: 10 },
+        { token, org },
+      );
+      if (delTasks.code === 200) ok("HERO-A41", "已删任务列表");
+      else bad("HERO-A41", "已删任务列表", `code=${delTasks.code}`);
+
+      const invite = await post(
+        "project/inviteLink/save",
+        { inviteType: "project", sourceCode: projectCode },
+        { token, org },
+      );
+      const inviteCode = invite.data?.code ?? "";
+      if (invite.code === 200 && inviteCode) {
+        ok("HERO-A42", "生成邀请链接");
+        const inviteRead = await post(
+          "project/inviteLink/_read",
+          { inviteCode },
+          { token, org },
+        );
+        if (inviteRead.code === 200) ok("HERO-A43", "邀请链接详情");
+        else bad("HERO-A43", "邀请链接详情", `code=${inviteRead.code}`);
+      } else {
+        bad("HERO-A42", "生成邀请链接", invite.msg || String(invite.code));
+      }
+
+      const collect = await post(
+        "project/projectCollect/collect",
+        { projectCode, type: "collect" },
+        { token, org },
+      );
+      if (collect.code === 200) {
+        ok("HERO-A44", "收藏项目");
+        await post(
+          "project/projectCollect/collect",
+          { projectCode, type: "cancel" },
+          { token, org },
+        );
+      } else {
+        bad("HERO-A44", "收藏项目", `code=${collect.code}`);
+      }
+
+      const inviteList = await post(
+        "project/projectMember/_listForInvite",
+        { projectCode },
+        { token, org },
+      );
+      if (inviteList.code === 200) ok("HERO-A45", "可邀请成员列表");
+      else bad("HERO-A45", "可邀请成员列表", `code=${inviteList.code}`);
+    } catch (e) {
+      bad("HERO-A40", "Phase6 项目", String(e));
+    }
+  }
+
+  if (taskCode) {
+    try {
+      const wt = await post("project/task/_taskWorkTimeList", { taskCode }, { token, org });
+      if (wt.code === 200) ok("HERO-A46", "工时列表");
+      else bad("HERO-A46", "工时列表", `code=${wt.code}`);
+
+      const wtSave = await post(
+        "project/task/saveTaskWorkTime",
+        {
+          taskCode,
+          num: 60,
+          content: "hero phase6",
+          beginTime: "2030-01-01 09:00:00",
+        },
+        { token, org },
+      );
+      if (wtSave.code === 200) ok("HERO-A47", "登记工时");
+      else bad("HERO-A47", "登记工时", wtSave.msg || String(wtSave.code));
+
+      const recycle = await post("project/task/recycle", { taskCode }, { token, org });
+      if (recycle.code === 200) {
+        ok("HERO-A48", "任务移入回收站");
+        const recovery = await post("project/task/recovery", { taskCode }, { token, org });
+        if (recovery.code === 200) ok("HERO-A49", "任务恢复");
+        else bad("HERO-A49", "任务恢复", `code=${recovery.code}`);
+      } else {
+        bad("HERO-A48", "任务移入回收站", `code=${recycle.code}`);
+      }
+    } catch (e) {
+      bad("HERO-A46", "工时/回收", String(e));
+    }
+  }
+
   summary();
   process.exit(failed ? 1 : 0);
 }

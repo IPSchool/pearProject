@@ -101,3 +101,48 @@ export async function fetchTaskComments(taskCode: string) {
   }
   return res.data.list ?? [];
 }
+
+export async function searchTasks(keyword: string, projectCode?: string, page = 1, pageSize = 30) {
+  const res = await post<{ list: TaskItem[]; total: number }>("project/task/index", {
+    keyword,
+    projectCode,
+    page,
+    pageSize,
+  });
+  if (!isOk(res)) throw new Error(res.msg || "搜索任务失败");
+  return res.data;
+}
+
+export interface TaskWorkTimeItem {
+  id?: number;
+  work_time?: number;
+  content?: string;
+  begin_time?: string;
+  end_time?: string;
+}
+
+export async function fetchTaskWorkTimes(taskCode: string) {
+  const res = await post<{ list: TaskWorkTimeItem[] } | TaskWorkTimeItem[]>(
+    "project/task/_taskWorkTimeList",
+    { taskCode },
+  );
+  if (!isOk(res)) throw new Error(res.msg || "获取工时失败");
+  const data = res.data;
+  if (Array.isArray(data)) return data;
+  return data.list ?? [];
+}
+
+export async function saveTaskWorkTime(
+  taskCode: string,
+  num: number,
+  content: string,
+  beginTime: string,
+) {
+  const res = await post("project/task/saveTaskWorkTime", {
+    taskCode,
+    num,
+    content,
+    beginTime,
+  });
+  if (!isOk(res)) throw new Error(res.msg || "登记工时失败");
+}

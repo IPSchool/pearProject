@@ -57,7 +57,8 @@ src/
 │   ├── auth/
 │   ├── workbench/
 │   ├── projects/
-│   ├── events/
+│   ├── search/
+│   ├── recycle/
 │   ├── analytics/
 │   ├── templates/
 │   ├── team/
@@ -78,11 +79,12 @@ src/
 | **3** | 成员、文件、评论、通知 | ✅ |
 | **4** | 版本、模板、工作流、团队/RBAC | ✅ |
 | **5** | 日程、WebSocket、图表 | ✅ |
+| **6** | 回收站、邀请链接、搜索、收藏 | ✅ |
 
 ## 验收
 
 ```bash
-bash tests/hero/run.sh   # API 验收 38 项 + Vitest 单元测试
+bash tests/hero/run.sh   # API 验收 49 项 + Vitest 单元测试
 npm run build
 ```
 
