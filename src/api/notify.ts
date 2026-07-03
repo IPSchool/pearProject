@@ -1,18 +1,7 @@
 import { isOk, post } from "@/api/client";
+import type { NotificationItem, NoReadsSummary } from "@/types/api";
 
-export interface NotificationItem {
-  id: number;
-  title: string;
-  content: string;
-  type: string;
-  is_read: number;
-  create_time: string;
-}
-
-export interface NoReadsSummary {
-  total: number;
-  totalSum?: { notice: number; message: number; task: number };
-}
+export type { NotificationItem, NoReadsSummary };
 
 export async function fetchNotifications(page = 1, pageSize = 20) {
   const res = await post<{ list: NotificationItem[]; total: number }>("project/notify/index", {
@@ -37,4 +26,9 @@ export async function markNotificationRead(notifyId: number) {
 export async function deleteNotification(notifyId: number) {
   const res = await post("project/notify/delete", { notifyId });
   if (!isOk(res)) throw new Error(res.msg || "删除失败");
+}
+
+export async function clearAllNotifications() {
+  const res = await post("project/notify/_clearAll", {});
+  if (!isOk(res)) throw new Error(res.msg || "清空失败");
 }

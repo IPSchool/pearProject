@@ -12,6 +12,7 @@ import {
 
 import { KanbanBoard } from "@/components/kanban-board";
 import { TaskDetailDrawer } from "@/components/task-detail-drawer";
+import * as taskStagesApi from "@/api/taskStages";
 import * as taskApi from "@/api/task";
 import { fetchTaskStages } from "@/api/task";
 import type { TaskItem, TaskStage } from "@/types/api";
@@ -26,6 +27,9 @@ export default function ProjectTasksPage() {
   const [newTaskStage, setNewTaskStage] = useState("");
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [stageOpen, setStageOpen] = useState(false);
+  const [stageName, setStageName] = useState("");
+  const [stageSaving, setStageSaving] = useState(false);
 
   async function openCreate() {
     setCreateError(null);
@@ -55,11 +59,31 @@ export default function ProjectTasksPage() {
     }
   }
 
+  async function handleCreateStage() {
+    if (!stageName.trim()) return;
+    setStageSaving(true);
+    try {
+      await taskStagesApi.createTaskStage(projectCode, stageName.trim());
+      setStageOpen(false);
+      setStageName("");
+      setRefreshKey((k) => k + 1);
+    } catch (e) {
+      setCreateError(e instanceof Error ? e.message : "创建列失败");
+    } finally {
+      setStageSaving(false);
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">任务看板</h2>
-        <Button onPress={openCreate}>创建任务</Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" onPress={() => setStageOpen(true)}>
+            新建列
+          </Button>
+          <Button onPress={openCreate}>创建任务</Button>
+        </div>
       </div>
 
       {createError && !createOpen ? (
@@ -126,6 +150,30 @@ export default function ProjectTasksPage() {
               <Button isPending={creating} onPress={handleCreate}>
                 创建
               </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
+
+      <Modal.Backdrop isOpen={stageOpen} onOpenChange={setStageOpen}>
+        <Modal.Container>
+          <Modal.Dialog>
+            <Modal.CloseTrigger />
+            <Modal.Header><Modal.Heading>新建看板列</Modal.Heading></Modal.Header>
+            <Modal.Body>
+              <TextField isRequired name="stageName">
+                <Label>列名称</Label>
+                <InputGroup>
+                  <InputGroup.Input
+                    value={stageName}
+                    onChange={(e) => setStageName(e.target.value)}
+                  />
+                </InputGroup>
+              </TextField>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="tertiary" onPress={() => setStageOpen(false)}>取消</Button>
+              <Button isPending={stageSaving} onPress={handleCreateStage}>创建</Button>
             </Modal.Footer>
           </Modal.Dialog>
         </Modal.Container>

@@ -1,5 +1,7 @@
 import { isOk, post } from "@/api/client";
-import type { TaskItem, TaskStage } from "@/types/api";
+import type { TaskItem, TaskStage, TaskLogItem, TaskWorkTimeItem } from "@/types/api";
+
+export type { TaskLogItem, TaskWorkTimeItem };
 
 export async function fetchTaskStages(projectCode: string) {
   const res = await post<{ list: TaskStage[] } | TaskStage[]>(
@@ -79,16 +81,6 @@ export async function createComment(taskCode: string, comment: string) {
   }
 }
 
-export interface TaskLogItem {
-  id: number;
-  content: string;
-  remark?: string;
-  is_comment?: number;
-  create_time: string;
-  member_name?: string;
-  member_avatar?: string;
-}
-
 export async function fetchTaskComments(taskCode: string) {
   const res = await post<{ list: TaskLogItem[]; total: number }>("project/task/taskLog", {
     taskCode,
@@ -113,15 +105,6 @@ export async function searchTasks(keyword: string, projectCode?: string, page = 
   return res.data;
 }
 
-export interface TaskWorkTimeItem {
-  id?: number;
-  code?: string;
-  num?: number;
-  work_time?: number;
-  content?: string;
-  begin_time?: string;
-  end_time?: string;
-}
 
 export async function fetchTaskWorkTimes(taskCode: string) {
   const res = await post<{ list: TaskWorkTimeItem[] } | TaskWorkTimeItem[]>(
@@ -147,4 +130,19 @@ export async function saveTaskWorkTime(
     beginTime,
   });
   if (!isOk(res)) throw new Error(res.msg || "登记工时失败");
+}
+
+export async function editTask(taskCode: string, name: string, description = "") {
+  const res = await post("project/task/edit", { taskCode, name, description });
+  if (!isOk(res)) throw new Error(res.msg || "更新任务失败");
+}
+
+export async function fetchMyTasks(page = 1, pageSize = 20) {
+  const res = await post<{ list: TaskItem[]; total: number }>("project/task/selfList", {
+    page,
+    pageSize,
+    type: 0,
+  });
+  if (!isOk(res)) throw new Error(res.msg || "获取我的任务失败");
+  return res.data;
 }

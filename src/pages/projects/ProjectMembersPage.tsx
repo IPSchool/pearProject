@@ -11,7 +11,7 @@ import {
 
 import * as inviteApi from "@/api/invite";
 import * as memberApi from "@/api/member";
-import type { ProjectMember } from "@/api/member";
+import type { ProjectMember } from "@/types/api";
 import { MemberAvatar } from "@/components/member-avatar";
 
 export default function ProjectMembersPage() {
@@ -24,11 +24,15 @@ export default function ProjectMembersPage() {
   const [error, setError] = useState<string | null>(null);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [inviting, setInviting] = useState(false);
+  const [acting, setActing] = useState<string | null>(null);
+
+  async function loadMembers() {
+    const d = await memberApi.fetchProjectMembers(projectCode);
+    setMembers(d.list ?? []);
+  }
 
   useEffect(() => {
-    memberApi
-      .fetchProjectMembers(projectCode)
-      .then((d) => setMembers(d.list ?? []))
+    loadMembers()
       .catch((e) => setError(e instanceof Error ? e.message : "加载失败"))
       .finally(() => setLoading(false));
   }, [projectCode]);
@@ -63,6 +67,31 @@ export default function ProjectMembersPage() {
     }
   }
 
+  async function handleInvite(memberCode: string) {
+    setActing(memberCode);
+    try {
+      await memberApi.inviteMember(projectCode, memberCode);
+      await loadMembers();
+      setSearchResults((prev) => prev.filter((m) => m.code !== memberCode));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "邀请失败");
+    } finally {
+      setActing(null);
+    }
+  }
+
+  async function handleRemove(memberCode: string) {
+    setActing(memberCode);
+    try {
+      await memberApi.removeMember(projectCode, memberCode);
+      await loadMembers();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "移除失败");
+    } finally {
+      setActing(null);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center py-16">
@@ -79,7 +108,7 @@ export default function ProjectMembersPage() {
           生成邀请链接
         </Button>
       </div>
-        {inviteCode ? (
+      {inviteCode ? (
         <Card className="p-4 bg-accent/5">
           <p className="text-sm font-medium">邀请码</p>
           <p className="font-mono text-sm mt-1 break-all">{inviteCode}</p>
@@ -95,17 +124,29 @@ export default function ProjectMembersPage() {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {members.map((m) => (
-          <Card key={m.code} className="p-4 flex items-center gap-3">
-            <MemberAvatar name={m.name} src={m.avatar} />
-            <div className="min-w-0">
-              <p className="font-medium truncate">{m.name}</p>
-              <p className="text-xs text-muted truncate">{m.email}</p>
-              {m.is_owner ? (
-                <Chip className="mt-1" size="sm" variant="soft">
-                  拥有者
-                </Chip>
-              ) : null}
+          <Card key={m.code} className="p-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <MemberAvatar name={m.name} src={m.avatar} />
+              <div className="min-w-0">
+                <p className="font-medium truncate">{m.name}</p>
+                <p className="text-xs text-muted truncate">{m.email}</p>
+                {m.is_owner ? (
+                  <Chip className="mt-1" size="sm" variant="soft">
+                    拥有者
+                  </Chip>
+                ) : null}
+              </div>
             </div>
+            {!m.is_owner ? (
+              <Button
+                isPending={acting === m.code}
+                size="sm"
+                variant="tertiary"
+                onPress={() => handleRemove(m.code)}
+              >
+                移除
+              </Button>
+            ) : null}
           </Card>
         ))}
       </div>
@@ -125,9 +166,18 @@ export default function ProjectMembersPage() {
         {searchResults.length ? (
           <ul className="text-sm space-y-2">
             {searchResults.map((m) => (
-              <li key={m.code} className="flex items-center gap-2">
-                <MemberAvatar className="shrink-0" name={m.name} src={m.avatar} />
-                {m.name} — {m.email}
+              <li key={m.code} className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <MemberAvatar className="shrink-0" name={m.name} src={m.avatar} />
+                  {m.name} — {m.email}
+                </div>
+                <Button
+                  isPending={acting === m.code}
+                  size="sm"
+                  onPress={() => handleInvite(m.code)}
+                >
+                  邀请
+                </Button>
               </li>
             ))}
           </ul>

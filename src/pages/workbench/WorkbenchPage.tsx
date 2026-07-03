@@ -44,8 +44,8 @@ export default function WorkbenchPage() {
         <Card className="p-4">
           <p className="text-sm text-muted">组织任务</p>
           <p className="text-3xl font-bold mt-2">{loading ? "—" : (taskCount ?? "—")}</p>
-          <Link className="text-xs text-accent hover:underline mt-2 inline-block" to="/analytics">
-            查看分析
+          <Link className="text-xs text-accent hover:underline mt-2 inline-block" to="/my-tasks">
+            我的任务
           </Link>
         </Card>
         <Card className="p-4">

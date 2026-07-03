@@ -1,10 +1,14 @@
 import { Link, useLocation, useParams } from "react-router-dom";
+
+import { useProjectContext } from "@/contexts/project-context";
 import clsx from "clsx";
 
 const tabs = [
+  { key: "overview", label: "概览", suffix: "/overview" },
   { key: "tasks", label: "看板", suffix: "/tasks" },
   { key: "members", label: "成员", suffix: "/members" },
   { key: "files", label: "文件", suffix: "/files" },
+  { key: "tags", label: "标签", suffix: "/tags" },
   { key: "versions", label: "版本", suffix: "/versions" },
   { key: "workflow", label: "工作流", suffix: "/workflow" },
 ] as const;
@@ -40,6 +44,8 @@ export function ProjectTabs() {
 
 export function ProjectBreadcrumb({ title }: { title?: string }) {
   const { code = "" } = useParams<{ code: string }>();
+  const project = useProjectContext();
+  const display = project?.name ?? code;
   return (
     <div>
       <p className="text-sm text-muted">
@@ -47,7 +53,7 @@ export function ProjectBreadcrumb({ title }: { title?: string }) {
           项目
         </Link>
         {" / "}
-        {code}
+        {display}
         {title ? ` / ${title}` : ""}
       </p>
     </div>

@@ -1,5 +1,16 @@
 import { isOk, post } from "@/api/client";
-import type { ProjectSummary } from "@/types/api";
+import type { ProjectDetail, ProjectSummary } from "@/types/api";
+
+export async function fetchProject(projectCode: string) {
+  const res = await post<ProjectDetail>("project/project/read", { projectCode });
+  if (!isOk(res)) throw new Error(res.msg || "获取项目详情失败");
+  return res.data;
+}
+
+export async function editProject(projectCode: string, name: string, description = "") {
+  const res = await post("project/project/edit", { projectCode, name, description });
+  if (!isOk(res)) throw new Error(res.msg || "更新项目失败");
+}
 
 export async function fetchSelfProjects(page = 1, pageSize = 20) {
   const res = await post<{ list: ProjectSummary[]; total: number }>(

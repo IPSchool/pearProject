@@ -58,6 +58,13 @@ export interface ProjectSummary {
   collected?: number;
 }
 
+export interface ProjectDetail extends ProjectSummary {
+  owner_name?: string;
+  owner_avatar?: string;
+  organization_code?: string;
+  create_time?: string;
+}
+
 export interface TaskStage {
   code: string;
   name: string;
@@ -85,4 +92,68 @@ export interface RegisterPayload {
   password2: string;
   mobile: string;
   captcha: string;
+}
+
+export interface TaskLogItem {
+  id: number;
+  content: string;
+  remark?: string;
+  is_comment?: number;
+  create_time: string;
+  member_name?: string;
+  member_avatar?: string;
+}
+
+export interface TaskWorkTimeItem {
+  id?: number;
+  code?: string;
+  num?: number;
+  work_time?: number;
+  content?: string;
+  begin_time?: string;
+  end_time?: string;
+}
+
+export interface TaskTagItem {
+  code: string;
+  name: string;
+  color?: string;
+  project_code?: string;
+}
+
+export interface ProjectInfoBlock {
+  code: string;
+  name: string;
+  value?: string;
+  description?: string;
+  sort?: number;
+  project_code?: string;
+}
+
+export interface TaskStagesTemplate {
+  code: string;
+  name: string;
+  description?: string;
+}
+
+export interface ProjectMember {
+  code: string;
+  name: string;
+  email?: string;
+  avatar?: string;
+  is_owner?: number;
+}
+
+export interface NotificationItem {
+  id: number;
+  title: string;
+  content: string;
+  type: string;
+  is_read: number;
+  create_time: string;
+}
+
+export interface NoReadsSummary {
+  total: number;
+  totalSum?: { notice: number; message: number; task: number };
 }

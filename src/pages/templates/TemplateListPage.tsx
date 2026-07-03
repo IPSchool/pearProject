@@ -2,11 +2,16 @@ import { useEffect, useState } from "react";
 import { Button, Card, InputGroup, Label, Modal, Spinner, TextField } from "@heroui/react";
 
 import * as templateApi from "@/api/template";
+import * as stagesTplApi from "@/api/taskStagesTemplate";
 import type { ProjectTemplate } from "@/api/template";
+import type { TaskStagesTemplate } from "@/types/api";
 
 export default function TemplateListPage() {
   const [templates, setTemplates] = useState<ProjectTemplate[]>([]);
+  const [stageTemplates, setStageTemplates] = useState<TaskStagesTemplate[]>([]);
+  const [selectedTpl, setSelectedTpl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [stagesLoading, setStagesLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
@@ -16,8 +21,12 @@ export default function TemplateListPage() {
   async function load() {
     setLoading(true);
     try {
-      const data = await templateApi.fetchTemplates(1, 50);
-      setTemplates(data.list ?? []);
+      const proj = await templateApi.fetchTemplates(1, 50);
+      const list = proj.list ?? [];
+      setTemplates(list);
+      if (list.length) {
+        setSelectedTpl(list[0].code);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "加载失败");
     } finally {
@@ -28,6 +37,19 @@ export default function TemplateListPage() {
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    if (!selectedTpl) {
+      setStageTemplates([]);
+      return;
+    }
+    setStagesLoading(true);
+    stagesTplApi
+      .fetchTaskStagesTemplates(selectedTpl)
+      .then((data) => setStageTemplates(data.list ?? []))
+      .catch(() => setStageTemplates([]))
+      .finally(() => setStagesLoading(false));
+  }, [selectedTpl]);
 
   async function handleCreate() {
     if (!name.trim()) return;
@@ -60,7 +82,11 @@ export default function TemplateListPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {templates.map((t) => (
-            <Card key={t.code} className="overflow-hidden">
+            <Card
+              key={t.code}
+              className={`overflow-hidden cursor-pointer ${selectedTpl === t.code ? "ring-2 ring-accent" : ""}`}
+              onClick={() => setSelectedTpl(t.code)}
+            >
               {t.cover ? (
                 <img alt="" className="h-28 w-full object-cover" src={t.cover} />
               ) : (
@@ -74,6 +100,28 @@ export default function TemplateListPage() {
           ))}
         </div>
       )}
+
+      <section className="space-y-3">
+        <h3 className="text-lg font-medium">看板列模板</h3>
+        <p className="text-sm text-muted">选中项目模板后展示其默认看板列（taskStagesTemplate）</p>
+        {stagesLoading ? (
+          <div className="flex justify-center py-8"><Spinner /></div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {stageTemplates.map((t) => (
+              <Card key={t.code} className="p-4">
+                <p className="font-semibold">{t.name}</p>
+                <p className="text-sm text-muted mt-1">{t.description || "—"}</p>
+              </Card>
+            ))}
+            {!stageTemplates.length && !stagesLoading ? (
+              <Card className="p-6 text-center text-muted col-span-full">
+                {selectedTpl ? "该模板暂无看板列" : "请先创建项目模板"}
+              </Card>
+            ) : null}
+          </div>
+        )}
+      </section>
 
       <Modal.Backdrop isOpen={open} onOpenChange={setOpen}>
         <Modal.Container>

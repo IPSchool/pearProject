@@ -66,7 +66,7 @@ export default function ProjectListPage() {
           {projects.map((project) => (
             <Card key={project.code} className="overflow-hidden hover:shadow-md transition-shadow h-full">
               <div className="relative">
-                <Link to={`/project/${project.code}/tasks`}>
+                <Link to={`/project/${project.code}/overview`}>
                   {project.cover ? (
                     <img alt="" className="h-28 w-full object-cover" src={project.cover} />
                   ) : (
@@ -83,7 +83,7 @@ export default function ProjectListPage() {
                   {project.collected ? "★" : "☆"}
                 </Button>
               </div>
-              <Link className="block p-4" to={`/project/${project.code}/tasks`}>
+              <Link className="block p-4" to={`/project/${project.code}/overview`}>
                 <p className="font-semibold">{project.name}</p>
                 <p className="text-sm text-muted mt-1 line-clamp-2">
                   {project.description || "暂无简介"}

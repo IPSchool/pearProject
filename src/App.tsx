@@ -18,7 +18,10 @@ import ProjectListPage from "@/pages/projects/ProjectListPage";
 import ProjectMembersPage from "@/pages/projects/ProjectMembersPage";
 import ProjectTasksPage from "@/pages/projects/ProjectTasksPage";
 import ProjectVersionsPage from "@/pages/projects/ProjectVersionsPage";
+import ProjectOverviewPage from "@/pages/projects/ProjectOverviewPage";
+import ProjectTagsPage from "@/pages/projects/ProjectTagsPage";
 import ProjectWorkflowPage from "@/pages/projects/ProjectWorkflowPage";
+import MyTasksPage from "@/pages/tasks/MyTasksPage";
 import SettingsPage from "@/pages/settings/SettingsPage";
 import TeamAccountsPage from "@/pages/team/TeamAccountsPage";
 import TeamDepartmentsPage from "@/pages/team/TeamDepartmentsPage";
@@ -42,6 +45,7 @@ function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
+          <Route element={<MyTasksPage />} path="/my-tasks" />
           <Route element={<WorkbenchPage />} path="/workbench" />
           <Route element={<EventsPage />} path="/events" />
           <Route element={<AnalyticsPage />} path="/analytics" />
@@ -60,12 +64,14 @@ function App() {
             <Route element={<Navigate replace to="organizations" />} index />
           </Route>
           <Route element={<ProjectLayout />} path="/project/:code">
+            <Route element={<ProjectOverviewPage />} path="overview" />
             <Route element={<ProjectTasksPage />} path="tasks" />
             <Route element={<ProjectMembersPage />} path="members" />
             <Route element={<ProjectFilesPage />} path="files" />
+            <Route element={<ProjectTagsPage />} path="tags" />
             <Route element={<ProjectVersionsPage />} path="versions" />
             <Route element={<ProjectWorkflowPage />} path="workflow" />
-            <Route element={<Navigate replace to="tasks" />} index />
+            <Route element={<Navigate replace to="overview" />} index />
           </Route>
         </Route>
       </Route>

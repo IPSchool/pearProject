@@ -10,9 +10,9 @@
 ## 设计原则
 
 1. **不迁移 Vue 代码** — 只参考 HistoryV 的页面流程与 pearProjectDocs 功能设计。
-2. **API 不变** — 优先对接 master TP6 Legacy `project/*`（与 Gate A 一致）。
+2. **API 不变** — 对接 master TP6 Legacy `project/*`（与 Gate A 一致）。
 3. **现代栈** — 函数组件、TypeScript strict、Vite、Zustand、Axios。
-4. **渐进交付** — 按产品域分 Phase，每 Phase 可独立验收。
+4. **一次交付** — 核心产品域已对齐 Legacy API，后续按需迭代。
 
 ## 技术栈
 
@@ -52,11 +52,13 @@ src/
 ├── api/           # Legacy API 客户端
 ├── components/    # 通用 UI
 ├── config/        # 环境与站点配置
-├── layouts/       # AuthLayout / AppLayout
+├── contexts/      # 项目级 React Context
+├── layouts/       # AuthLayout / AppLayout / ProjectLayout
 ├── pages/         # 按产品域划分
 │   ├── auth/
 │   ├── workbench/
-│   ├── projects/
+│   ├── projects/  # 概览、看板、成员、文件、标签、版本、工作流
+│   ├── tasks/     # 我的任务
 │   ├── invite/
 │   ├── archive/
 │   ├── recycle/
@@ -67,26 +69,52 @@ src/
 │   └── settings/
 ├── routes/        # 路由守卫
 ├── stores/        # Zustand
-└── types/         # API 类型
+└── types/         # 共享 API 类型（api.ts）
 ```
 
-## 实现路线图
+## 功能完成清单
 
-| Phase | 范围 | 状态 |
-|-------|------|------|
-| **0** | 脚手架、登录、布局、工作台/项目列表骨架 | ✅ |
-| **1** | 注册、资料、组织切换、动态菜单 | ✅ |
-| **2** | 看板（列/卡片/拖拽）、任务详情、创建任务 | ✅ |
-| **3** | 成员、文件、评论、通知 | ✅ |
-| **4** | 版本、模板、工作流、团队/RBAC | ✅ |
-| **5** | 日程、WebSocket、图表 | ✅ |
-| **6** | 回收站、邀请链接、搜索、收藏 | ✅ |
-| **7** | 归档、工时 UI、邀请落地页 | ✅ |
+### 认证与全局
+
+- 登录 / 注册 / 个人设置
+- 组织切换、动态菜单、侧边栏导航
+- 工作台（项目概览、未读通知、我的任务入口）
+
+### 项目空间
+
+| 页面 | 路由 | Legacy API |
+|------|------|------------|
+| 概览 | `/project/:code/overview` | `project/read`, `project/edit`, `projectInfo/*` |
+| 看板 | `.../tasks` | `taskStages/*`, `task/*`, 拖拽排序 |
+| 成员 | `.../members` | `projectMember/*`, 邀请/移除 |
+| 文件 | `.../files` | `file/*` |
+| 标签 | `.../tags` | `taskTag/*`, 任务详情内 `setTag` |
+| 版本 | `.../versions` | `projectFeatures/*`, `projectVersion/*` |
+| 工作流 | `.../workflow` | `taskWorkflow/*` |
+
+### 跨项目
+
+- 项目列表 / 创建 / 收藏
+- 我的任务 `/my-tasks` — `task/selfList`
+- 任务搜索 `/search`
+- 回收站 / 归档
+- 邀请链接生成 + 落地页 `/invite/:code`
+- 日程 `/events`
+- 数据分析 `/analytics`
+- 项目模板 + 看板列模板 `/templates`
+- 通知（含全部清空）`/notifications`
+- 团队管理只读（组织/部门/角色/账户）
+
+### 任务详情抽屉
+
+- 编辑任务名、标记完成
+- 评论、工时登记
+- 标签切换（项目标签 ↔ 任务）
 
 ## 验收
 
 ```bash
-bash tests/hero/run.sh   # API 验收 53 项 + Vitest 单元测试
+bash tests/hero/run.sh   # API 验收 65 项 + Vitest 单元测试
 npm run build
 ```
 
@@ -96,9 +124,15 @@ npm run build
 
 - **Vue 原型**：`git checkout HistoryV` — 仅作 UI/流程参考
 - **API 文档**：pearProjectDocs `Manual/API参考.md`、`/swagger-ui`（8090）
-- **验收**：后端 Gate A 保证 Legacy API 不回退；Hero 前端逐步对齐 SystemDesign
+- **验收**：后端 Gate A 保证 Legacy API 不回退；Hero 前端对齐 SystemDesign
 
 ## 与 master 的关系
 
 - `Hero` 独立演进，成熟后合并或替换 `master` 前端。
 - 后端继续使用 pearProjectApi `master`（TP6 + Jira 层可选）。
+
+## 已知限制
+
+- 团队管理页为只读列表，CRUD 待后续迭代。
+- WebSocket 状态徽章需配置 `VITE_WS_URL`（可选）。
+- 仓库内仍保留 Vue Legacy 源码（`src/views` 等），Hero 构建不引用。

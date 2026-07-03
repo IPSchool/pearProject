@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button, Card, Chip, Spinner } from "@heroui/react";
 
 import * as notifyApi from "@/api/notify";
-import type { NotificationItem } from "@/api/notify";
+import type { NotificationItem } from "@/types/api";
 
 export default function NotificationsPage() {
   const [items, setItems] = useState<NotificationItem[]>([]);
@@ -41,6 +41,11 @@ export default function NotificationsPage() {
     await load();
   }
 
+  async function clearAll() {
+    await notifyApi.clearAllNotifications();
+    await load();
+  }
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
@@ -48,9 +53,14 @@ export default function NotificationsPage() {
           <h2 className="text-2xl font-semibold">通知</h2>
           <p className="text-muted text-sm mt-1">未读 {noReads} 条</p>
         </div>
-        <Button variant="tertiary" onPress={load}>
-          刷新
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="tertiary" onPress={clearAll}>
+            全部清空
+          </Button>
+          <Button variant="tertiary" onPress={load}>
+            刷新
+          </Button>
+        </div>
       </div>
 
       {error ? <p className="text-danger text-sm">{error}</p> : null}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   Button,
+  Chip,
   InputGroup,
   Label,
   Modal,
@@ -10,7 +11,8 @@ import {
 
 import { MemberAvatar } from "@/components/member-avatar";
 import * as taskApi from "@/api/task";
-import type { TaskLogItem, TaskWorkTimeItem } from "@/api/task";
+import * as taskTagApi from "@/api/taskTag";
+import type { TaskLogItem, TaskWorkTimeItem, TaskTagItem } from "@/types/api";
 import type { TaskItem } from "@/types/api";
 
 interface TaskDetailDrawerProps {
@@ -36,16 +38,29 @@ export function TaskDetailDrawer({
   const [wtBegin, setWtBegin] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [taskTags, setTaskTags] = useState<TaskTagItem[]>([]);
+  const [projectTags, setProjectTags] = useState<TaskTagItem[]>([]);
 
   const loadAll = useCallback(async (code: string) => {
-    const [taskData, commentList, wtList] = await Promise.all([
+    const [taskData, commentList, wtList, tagsOnTask] = await Promise.all([
       taskApi.fetchTask(code),
       taskApi.fetchTaskComments(code),
       taskApi.fetchTaskWorkTimes(code),
+      taskTagApi.fetchTaskTagsForTask(code),
     ]);
     setTask(taskData);
+    setEditName(taskData.name);
     setComments(commentList);
     setWorkTimes(wtList);
+    setTaskTags(tagsOnTask);
+    if (taskData.project_code) {
+      const all = await taskTagApi.fetchTaskTags(taskData.project_code);
+      setProjectTags(all);
+    } else {
+      setProjectTags([]);
+    }
   }, []);
 
   useEffect(() => {
@@ -61,6 +76,35 @@ export function TaskDetailDrawer({
       .catch((e) => setError(e instanceof Error ? e.message : "加载失败"))
       .finally(() => setLoading(false));
   }, [open, taskCode, loadAll]);
+
+  async function toggleTag(tag: TaskTagItem) {
+    if (!task) return;
+    setSubmitting(true);
+    try {
+      await taskTagApi.toggleTaskTag(task.code, tag.code);
+      onUpdated();
+      await loadAll(task.code);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "设置标签失败");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function saveEdit() {
+    if (!task || !editName.trim()) return;
+    setSubmitting(true);
+    try {
+      await taskApi.editTask(task.code, editName.trim(), task.description ?? "");
+      setEditing(false);
+      onUpdated();
+      await loadAll(task.code);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "保存失败");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   async function toggleDone() {
     if (!task) return;
@@ -128,6 +172,25 @@ export function TaskDetailDrawer({
               <p className="text-danger text-sm">{error}</p>
             ) : task ? (
               <div className="space-y-4">
+                {editing ? (
+                  <div className="flex gap-2">
+                    <TextField className="flex-1" name="editName">
+                      <InputGroup>
+                        <InputGroup.Input
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                        />
+                      </InputGroup>
+                    </TextField>
+                    <Button isPending={submitting} size="sm" onPress={saveEdit}>保存</Button>
+                    <Button size="sm" variant="tertiary" onPress={() => setEditing(false)}>取消</Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-medium">{task.name}</p>
+                    <Button size="sm" variant="tertiary" onPress={() => setEditing(true)}>编辑</Button>
+                  </div>
+                )}
                 <div className="text-sm text-muted space-y-1">
                   <p>优先级：{task.priText ?? "—"}</p>
                   <p>状态：{task.statusText ?? "—"}</p>
@@ -136,6 +199,30 @@ export function TaskDetailDrawer({
                 {task.description ? (
                   <p className="text-sm whitespace-pre-wrap">{task.description}</p>
                 ) : null}
+
+                <div>
+                  <p className="text-sm font-medium mb-2">标签</p>
+                  <div className="flex flex-wrap gap-2">
+                    {projectTags.length ? (
+                      projectTags.map((tag) => {
+                        const active = taskTags.some((t) => t.code === tag.code);
+                        return (
+                          <Chip
+                            key={tag.code}
+                            className="cursor-pointer"
+                            color={active ? "accent" : "default"}
+                            variant={active ? "primary" : "soft"}
+                            onClick={() => toggleTag(tag)}
+                          >
+                            {tag.name}
+                          </Chip>
+                        );
+                      })
+                    ) : (
+                      <p className="text-sm text-muted">项目暂无标签，可在「标签」页创建</p>
+                    )}
+                  </div>
+                </div>
 
                 <div>
                   <p className="text-sm font-medium mb-2">工时 ({workTimes.length})</p>

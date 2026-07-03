@@ -770,6 +770,108 @@ async function main() {
     }
   }
 
+  // --- Feature completion (Gate A HV-A87+ alignment) ---
+  if (projectCode) {
+    try {
+      const projRead = await post("project/project/read", { projectCode }, { token, org });
+      if (projRead.code === 200 && projRead.data?.name) ok("HERO-A54", "项目详情 read");
+      else bad("HERO-A54", "项目详情 read", `code=${projRead.code}`);
+
+      const infoList = await post("project/projectInfo/index", { projectCode }, { token, org });
+      if (infoList.code === 200) ok("HERO-A55", "项目信息块列表");
+      else bad("HERO-A55", "项目信息块列表", `code=${infoList.code}`);
+
+      const infoSave = await post(
+        "project/projectInfo/save",
+        { projectCode, name: `Hero-info-${Date.now()}`, value: "v1", description: "hero" },
+        { token, org },
+      );
+      if (infoSave.code === 200) ok("HERO-A56", "创建项目信息块");
+      else bad("HERO-A56", "创建项目信息块", infoSave.msg || String(infoSave.code));
+
+      const tagList = await post("project/taskTag/index", { projectCode }, { token, org });
+      let tagCode = "";
+      if (tagList.code === 200) ok("HERO-A57", "任务标签列表");
+      else bad("HERO-A57", "任务标签列表", `code=${tagList.code}`);
+
+      const tagSave = await post(
+        "project/taskTag/save",
+        { projectCode, name: `Hero-tag-${Date.now()}`, color: "blue" },
+        { token, org },
+      );
+      tagCode = tagSave.data?.code ?? "";
+      if (tagSave.code === 200 && tagCode) ok("HERO-A58", "创建任务标签");
+      else bad("HERO-A58", "创建任务标签", tagSave.msg || String(tagSave.code));
+
+      const stageSave = await post(
+        "project/taskStages/save",
+        { projectCode, name: `Hero-col-${Date.now()}` },
+        { token, org },
+      );
+      if (stageSave.code === 200) ok("HERO-A59", "新建看板列");
+      else bad("HERO-A59", "新建看板列", stageSave.msg || String(stageSave.code));
+
+      const tplStages = await post(
+        "project/taskStagesTemplate/index",
+        { code: (await post("project/projectTemplate/index", { page: 1, pageSize: 1 }, { token, org })).data?.list?.[0]?.code ?? "" },
+        { token, org },
+      );
+      if (tplStages.code === 200) ok("HERO-A60", "看板列模板列表");
+      else if (tplStages.code === 201) ok("HERO-A60", "看板列模板列表 (空)");
+      else bad("HERO-A60", "看板列模板列表", `code=${tplStages.code}`);
+
+      if (taskCode && tagCode) {
+        const setTag = await post(
+          "project/task/setTag",
+          { taskCode, tagCode },
+          { token, org },
+        );
+        if (setTag.code === 200) ok("HERO-A61", "任务设置标签");
+        else bad("HERO-A61", "任务设置标签", setTag.msg || String(setTag.code));
+
+        const toTags = await post("project/task/taskToTags", { taskCode }, { token, org });
+        if (toTags.code === 200) ok("HERO-A62", "任务标签查询");
+        else bad("HERO-A62", "任务标签查询", `code=${toTags.code}`);
+      }
+    } catch (e) {
+      bad("HERO-A54", "Feature completion 项目", String(e));
+    }
+  }
+
+  try {
+    const myTasks = await post(
+      "project/task/selfList",
+      { page: 1, pageSize: 10, type: 0 },
+      { token, org },
+    );
+    if (myTasks.code === 200) ok("HERO-A63", "我的任务 selfList");
+    else bad("HERO-A63", "我的任务 selfList", `code=${myTasks.code}`);
+  } catch (e) {
+    bad("HERO-A63", "我的任务 selfList", String(e));
+  }
+
+  if (taskCode) {
+    try {
+      const edited = await post(
+        "project/task/edit",
+        { taskCode, name: `Hero-edited-${Date.now()}`, description: "hero edit" },
+        { token, org },
+      );
+      if (edited.code === 200) ok("HERO-A64", "编辑任务");
+      else bad("HERO-A64", "编辑任务", edited.msg || String(edited.code));
+    } catch (e) {
+      bad("HERO-A64", "编辑任务", String(e));
+    }
+  }
+
+  try {
+    const cleared = await post("project/notify/_clearAll", {}, { token, org });
+    if (cleared.code === 200) ok("HERO-A65", "清空全部通知");
+    else bad("HERO-A65", "清空全部通知", `code=${cleared.code}`);
+  } catch (e) {
+    bad("HERO-A65", "清空全部通知", String(e));
+  }
+
   summary();
   process.exit(failed ? 1 : 0);
 }
