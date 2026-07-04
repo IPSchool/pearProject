@@ -17,6 +17,8 @@ export default function InviteLandingPage() {
   const [error, setError] = useState<string | null>(null);
   const [joined, setJoined] = useState(false);
 
+  const isOrgInvite = detail?.invite_type === "organization";
+
   useEffect(() => {
     if (!inviteCode) return;
     inviteApi
@@ -34,13 +36,22 @@ export default function InviteLandingPage() {
     setJoining(true);
     setError(null);
     try {
-      await inviteApi.joinProjectByInviteLink(inviteCode);
-      setJoined(true);
-      const projectCode = detail?.source_code ?? detail?.sourceDetail?.code;
-      if (projectCode) {
-        navigate(`/project/${projectCode}/tasks`);
+      if (isOrgInvite) {
+        const data = await inviteApi.joinOrganizationByInviteLink(inviteCode);
+        if (data.organizationList) {
+          useAuthStore.setState({ organizationList: data.organizationList as never[] });
+        }
+        setJoined(true);
+        navigate("/team/members");
       } else {
-        navigate("/projects");
+        await inviteApi.joinProjectByInviteLink(inviteCode);
+        setJoined(true);
+        const projectCode = detail?.source_code ?? detail?.sourceDetail?.code;
+        if (projectCode) {
+          navigate(`/project/${projectCode}/tasks`);
+        } else {
+          navigate("/projects");
+        }
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "加入失败");
@@ -60,13 +71,13 @@ export default function InviteLandingPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-6">
       <Card className="w-full max-w-md p-8 space-y-4">
-        <h1 className="text-xl font-semibold">项目邀请</h1>
+        <h1 className="text-xl font-semibold">{isOrgInvite ? "组织邀请" : "项目邀请"}</h1>
         {error && !detail ? (
           <p className="text-danger text-sm">{error}</p>
         ) : (
           <>
             <p className="text-sm">
-              <span className="text-muted">项目：</span>
+              <span className="text-muted">{isOrgInvite ? "组织" : "项目"}：</span>
               {detail?.name ?? detail?.sourceDetail?.name ?? "—"}
             </p>
             {detail?.member?.name ? (
@@ -80,10 +91,12 @@ export default function InviteLandingPage() {
             ) : null}
             {error ? <p className="text-danger text-sm">{error}</p> : null}
             {joined ? (
-              <p className="text-sm text-accent">已成功加入项目</p>
+              <p className="text-sm text-accent">
+                {isOrgInvite ? "已成功加入组织" : "已成功加入项目"}
+              </p>
             ) : (
               <Button className="w-full" isPending={joining} onPress={handleJoin}>
-                {logged ? "加入项目" : "登录并加入"}
+                {logged ? (isOrgInvite ? "加入组织" : "加入项目") : "登录并加入"}
               </Button>
             )}
             <Link className="block text-center text-sm text-muted hover:underline" to="/member/login">

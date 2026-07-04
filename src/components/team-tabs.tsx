@@ -3,9 +3,9 @@ import clsx from "clsx";
 
 const tabs = [
   { label: "组织", href: "/team/organizations" },
-  { label: "部门", href: "/team/departments" },
-  { label: "角色", href: "/team/roles" },
-  { label: "成员账户", href: "/team/accounts" },
+  { label: "团队成员", href: "/team/members" },
+  { label: "系统账号", href: "/team/accounts" },
+  { label: "角色权限", href: "/team/roles" },
 ] as const;
 
 export function TeamTabs() {

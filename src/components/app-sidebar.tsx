@@ -25,7 +25,7 @@ export function AppSidebar() {
       { label: "日程", href: "/events" },
       { label: "数据分析", href: "/analytics" },
       { label: "项目模板", href: "/templates" },
-      { label: "团队管理", href: "/team/organizations" },
+      { label: "团队管理", href: "/team/members" },
       { label: "通知", href: "/notifications" },
       { label: "个人设置", href: "/settings" },
     ];

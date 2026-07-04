@@ -7,6 +7,24 @@ export interface InviteLinkResult {
   over_time?: string;
 }
 
+export async function createOrganizationInviteLink(organizationCode: string) {
+  const res = await post<InviteLinkResult>("project/inviteLink/save", {
+    inviteType: "organization",
+    sourceCode: organizationCode,
+  });
+  if (!isOk(res)) throw new Error(res.msg || "生成邀请链接失败");
+  return res.data;
+}
+
+export async function joinOrganizationByInviteLink(inviteCode: string) {
+  const res = await post<{ organizationList?: unknown[]; currentOrganization?: unknown }>(
+    "project/account/_joinByInviteLink",
+    { inviteCode },
+  );
+  if (!isOk(res)) throw new Error(res.msg || "加入组织失败");
+  return res.data;
+}
+
 export async function createProjectInviteLink(projectCode: string) {
   const res = await post<InviteLinkResult>("project/inviteLink/save", {
     inviteType: "project",

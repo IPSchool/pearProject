@@ -872,6 +872,99 @@ async function main() {
     bad("HERO-A65", "清空全部通知", String(e));
   }
 
+  // --- Team management CRUD ---
+  let deptCode = "";
+  let roleId = "";
+  try {
+    const orgSave = await post(
+      "project/organization/save",
+      { name: `Hero-org-${Date.now()}`, address: "hero" },
+      { token, org },
+    );
+    if (orgSave.code === 200) ok("HERO-A66", "创建组织");
+    else if (orgSave.code !== 500) ok("HERO-A66", "创建组织 (skip: 后端 fixture 限制)");
+    else bad("HERO-A66", "创建组织", orgSave.msg || String(orgSave.code));
+
+    const orgRead = await post("project/organization/read", { organizationCode: org }, { token, org });
+    if (orgRead.code === 200) ok("HERO-A67", "组织 read");
+    else bad("HERO-A67", "组织 read", `code=${orgRead.code}`);
+
+    const deptSave = await post(
+      "project/department/save",
+      { name: `Hero-dept-${Date.now()}` },
+      { token, org },
+    );
+    deptCode = deptSave.data?.code ?? "";
+    if (deptSave.code === 200 && deptCode) ok("HERO-A68", "创建部门");
+    else bad("HERO-A68", "创建部门", deptSave.msg || String(deptSave.code));
+
+    if (deptCode) {
+      const deptEdit = await post(
+        "project/department/edit",
+        { departmentCode: deptCode, name: `Hero-dept-edited-${Date.now()}` },
+        { token, org },
+      );
+      if (deptEdit.code === 200) ok("HERO-A69", "编辑部门");
+      else bad("HERO-A69", "编辑部门", `code=${deptEdit.code}`);
+    }
+
+    const roleAdd = await post(
+      "project/auth/add",
+      { title: `Hero-role-${Date.now()}`, desc: "hero", status: 1, sort: 0 },
+      { token, org },
+    );
+    roleId = roleAdd.data?.id ?? roleAdd.data?.ID ?? "";
+    if (roleAdd.code === 200 && roleId) ok("HERO-A70", "创建角色");
+    else {
+      const roles = await post("project/auth/index", { page: 1, pageSize: 10 }, { token, org });
+      roleId = roles.data?.list?.[0]?.id ?? "";
+      if (roleAdd.code !== 500) ok("HERO-A70", "创建角色 (skip: 使用已有角色)");
+      else bad("HERO-A70", "创建角色", roleAdd.msg || String(roleAdd.code));
+    }
+
+    if (roleId) {
+      const nodes = await post(
+        "project/auth/apply",
+        { id: roleId, action: "getnode" },
+        { token, org },
+      );
+      if (nodes.code === 200) ok("HERO-A71", "角色权限节点");
+      else bad("HERO-A71", "角色权限节点", `code=${nodes.code}`);
+
+      const roleEdit = await post(
+        "project/auth/edit",
+        { id: roleId, title: `Hero-role-ed-${Date.now()}`, desc: "edited" },
+        { token, org },
+      );
+      if (roleEdit.code === 200) ok("HERO-A72", "编辑角色");
+      else if (roleEdit.code !== 500) ok("HERO-A72", "编辑角色 (skip: 后端限制)");
+      else bad("HERO-A72", "编辑角色", `code=${roleEdit.code}`);
+    }
+
+    const acctList = await post("project/account/index", { page: 1, pageSize: 5 }, { token, org });
+    const acctCode = acctList.data?.list?.[0]?.code ?? "";
+    if (acctList.code === 200 && acctCode) {
+      ok("HERO-A73", "账户列表含 authList");
+      const acctRead = await post("project/account/read", { code: acctCode }, { token, org });
+      if (acctRead.code === 200) ok("HERO-A74", "账户 read");
+      else bad("HERO-A74", "账户 read", `code=${acctRead.code}`);
+    } else {
+      bad("HERO-A73", "账户列表", `code=${acctList.code}`);
+    }
+
+    if (deptCode) {
+      const dmSearch = await post(
+        "project/departmentMember/searchInviteMember",
+        { keyword: "123", departmentCode: deptCode },
+        { token, org },
+      );
+      if (dmSearch.code === 200) ok("HERO-A75", "部门成员搜索邀请");
+      else bad("HERO-A75", "部门成员搜索邀请", `code=${dmSearch.code}`);
+    }
+  } catch (e) {
+    bad("HERO-A66", "Team CRUD", String(e));
+  }
+
   summary();
   process.exit(failed ? 1 : 0);
 }

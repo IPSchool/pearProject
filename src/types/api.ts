@@ -157,3 +157,64 @@ export interface NoReadsSummary {
   total: number;
   totalSum?: { notice: number; message: number; task: number };
 }
+
+export interface OrganizationItem {
+  code: string;
+  name: string;
+  description?: string;
+  address?: string;
+  personal?: number;
+  owner_code?: string;
+  create_time?: string;
+}
+
+export interface DepartmentItem {
+  code: string;
+  name: string;
+  organization_code?: string;
+  pcode?: string;
+  hasNext?: boolean;
+}
+
+export interface AuthRole {
+  id: string;
+  title: string;
+  desc?: string;
+  status?: number;
+  is_default?: number;
+  create_at?: string;
+  canDelete?: boolean;
+}
+
+export interface AuthNode {
+  title: string;
+  node: string;
+  key: string;
+  checked?: boolean;
+  children?: AuthNode[];
+}
+
+export interface AccountItem {
+  id?: number | string;
+  code: string;
+  name: string;
+  email?: string;
+  mobile?: string;
+  avatar?: string;
+  status?: number;
+  is_owner?: number;
+  authorize?: number | string;
+  departments?: string;
+  description?: string;
+  position?: string;
+  member_code?: string;
+  membar_account_code?: string;
+}
+
+export interface InviteSearchMember {
+  accountCode: string;
+  name: string;
+  email?: string;
+  avatar?: string;
+  joined?: boolean;
+}

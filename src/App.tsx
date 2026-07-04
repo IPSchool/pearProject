@@ -24,8 +24,10 @@ import ProjectWorkflowPage from "@/pages/projects/ProjectWorkflowPage";
 import MyTasksPage from "@/pages/tasks/MyTasksPage";
 import SettingsPage from "@/pages/settings/SettingsPage";
 import TeamAccountsPage from "@/pages/team/TeamAccountsPage";
-import TeamDepartmentsPage from "@/pages/team/TeamDepartmentsPage";
+import TeamMembersPage from "@/pages/team/TeamMembersPage";
+import TeamMemberProfilePage from "@/pages/team/TeamMemberProfilePage";
 import TeamOrganizationsPage from "@/pages/team/TeamOrganizationsPage";
+import TeamRoleApplyPage from "@/pages/team/TeamRoleApplyPage";
 import TeamRolesPage from "@/pages/team/TeamRolesPage";
 import TemplateListPage from "@/pages/templates/TemplateListPage";
 import WorkbenchPage from "@/pages/workbench/WorkbenchPage";
@@ -58,10 +60,13 @@ function App() {
           <Route element={<SettingsPage />} path="/settings" />
           <Route element={<TeamLayout />} path="/team">
             <Route element={<TeamOrganizationsPage />} path="organizations" />
-            <Route element={<TeamDepartmentsPage />} path="departments" />
-            <Route element={<TeamRolesPage />} path="roles" />
+            <Route element={<TeamMembersPage />} path="members" />
+            <Route element={<TeamMemberProfilePage />} path="members/:code" />
             <Route element={<TeamAccountsPage />} path="accounts" />
-            <Route element={<Navigate replace to="organizations" />} index />
+            <Route element={<TeamRolesPage />} path="roles" />
+            <Route element={<TeamRoleApplyPage />} path="roles/:id/apply" />
+            <Route element={<Navigate replace to="members" />} index />
+            <Route element={<Navigate replace to="/team/members" />} path="departments" />
           </Route>
           <Route element={<ProjectLayout />} path="/project/:code">
             <Route element={<ProjectOverviewPage />} path="overview" />

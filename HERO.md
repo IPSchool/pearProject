@@ -103,7 +103,18 @@ src/
 - 数据分析 `/analytics`
 - 项目模板 + 看板列模板 `/templates`
 - 通知（含全部清空）`/notifications`
-- 团队管理只读（组织/部门/角色/账户）
+### 团队管理（完整 CRUD）
+
+| 页面 | 路由 | 能力 |
+|------|------|------|
+| 组织 | `/team/organizations` | 新建/编辑/退出组织 |
+| 团队成员 | `/team/members` | 部门树、成员筛选、邀请、批量导入、启停/移除 |
+| 成员详情 | `/team/members/:code` | 资料编辑、同步、任务/项目 |
+| 系统账号 | `/team/accounts` | 账户 CRUD、角色授权 |
+| 角色权限 | `/team/roles` | 角色 CRUD、默认角色、启停 |
+| 节点授权 | `/team/roles/:id/apply` | 权限树勾选（auth/apply） |
+
+组织邀请链接：`inviteType=organization` → `/invite/:code` 落地页加入。
 
 ### 任务详情抽屉
 
@@ -114,7 +125,7 @@ src/
 ## 验收
 
 ```bash
-bash tests/hero/run.sh   # API 验收 65 项 + Vitest 单元测试
+bash tests/hero/run.sh   # API 验收 75 项 + Vitest 单元测试
 npm run build
 ```
 
@@ -133,6 +144,6 @@ npm run build
 
 ## 已知限制
 
-- 团队管理页为只读列表，CRUD 待后续迭代。
 - WebSocket 状态徽章需配置 `VITE_WS_URL`（可选）。
+- 部门排序、批量更新成员信息等 Vue 占位功能未实现（HistoryV 同样未实现）。
 - 仓库内仍保留 Vue Legacy 源码（`src/views` 等），Hero 构建不引用。
