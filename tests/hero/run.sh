@@ -4,7 +4,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 export HERO_API_BASE="${HERO_API_BASE:-http://127.0.0.1:8090}"
-export HERO_ACCOUNT="${HERO_ACCOUNT:-123456}"
+export HERO_ACCOUNT="${HERO_ACCOUNT:-Lincoln}"
 export HERO_PASSWORD_MD5="${HERO_PASSWORD_MD5:-e10adc3949ba59abbe56e057f20f883e}"
 
 echo "========== Hero API Acceptance =========="

@@ -3,7 +3,7 @@
  * Run: tests/hero/run.sh (requires pearProjectApi docker/jira)
  */
 const BASE = (process.env.HERO_API_BASE || "http://127.0.0.1:8090").replace(/\/$/, "");
-const ACCOUNT = process.env.HERO_ACCOUNT || "123456";
+const ACCOUNT = process.env.HERO_ACCOUNT || "Lincoln";
 const PASSWORD = process.env.HERO_PASSWORD_MD5 || "e10adc3949ba59abbe56e057f20f883e";
 
 let passed = 0;

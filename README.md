@@ -18,7 +18,7 @@ npm run dev
 cd ../pearProjectApi/docker/jira && docker compose up -d
 ```
 
-演示账号：`123456` / `123456`
+演示账号：`Lincoln` / `123456`
 
 ## 脚本
 

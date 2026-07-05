@@ -41,7 +41,7 @@ npm install
 npm run dev
 ```
 
-打开 http://127.0.0.1:5173 ，演示账号 `123456` / `123456`。
+打开 http://127.0.0.1:5173 ，演示账号 `Lincoln` / `123456`。
 
 开发环境通过 Vite 代理：`/api/*` → `http://127.0.0.1:8090/*`。
 
@@ -80,11 +80,26 @@ src/
 - 组织切换、动态菜单、侧边栏导航
 - 工作台（项目概览、未读通知、我的任务入口）
 
-### 项目空间
+### 项目空间（Jira 式视图）
+
+项目页顶部为 **横向 Tab 导航**（对齐 Jira：摘要 → 列表 → 看板 → 日历 → 时间线 → 文档 → 表单 → 待办 → 版本），次要 Tab：成员 / 文件 / 标签 / 工作流。
+
+| 视图 | 路由 | 说明 |
+|------|------|------|
+| 摘要 | `/project/:code/overview` | KPI + 7日动态 + 状态环图 + 优先级柱图 + 近期动态（`project/_projectOverview`） |
+| **列表** | `/project/:code/list` | 表格视图，列配置（localStorage）、行内编辑经办人/优先级/状态/列 |
+| 看板 | `.../tasks` | Kanban 列 + 拖拽 |
+| 日历 | `.../calendar` | 月历 + 拖拽排期（`task/edit` 设置/清除截止日） |
+| 时间线 | `.../timeline` | 简易甘特条 |
+| 文档 | `.../wiki` | Wiki（Markdown，`projectInfo` + `hero:wiki`） |
+| 表单 | `.../forms` | 需求收集，提交后 `task/save` 创建工作项 |
+| 待办事项 | `.../backlog` | 第一列 = Backlog，其余 = 看板 |
+| 版本 | `.../versions` | `projectFeatures/*`, `projectVersion/*` |
+| 成员 / 文件 / 标签 / 工作流 | 同上 Legacy | 见下表 |
 
 | 页面 | 路由 | Legacy API |
 |------|------|------------|
-| 概览 | `/project/:code/overview` | `project/read`, `project/edit`, `projectInfo/*` |
+| 概览 | `/project/:code/overview` | `project/read`, `project/edit`, `projectInfo/*`, `_projectStats` |
 | 看板 | `.../tasks` | `taskStages/*`, `task/*`, 拖拽排序 |
 | 成员 | `.../members` | `projectMember/*`, 邀请/移除 |
 | 文件 | `.../files` | `file/*` |

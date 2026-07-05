@@ -17,7 +17,7 @@ bash tests/hero/run.sh
 | 变量 | 默认 |
 |------|------|
 | `HERO_API_BASE` | `http://127.0.0.1:8090` |
-| `HERO_ACCOUNT` | `123456` |
+| `HERO_ACCOUNT` | `Lincoln` |
 | `HERO_PASSWORD_MD5` | md5(123456) |
 
 ## 用例

@@ -17,7 +17,7 @@ export default function LoginPage() {
   const location = useLocation();
   const login = useAuthStore((s) => s.login);
 
-  const [account, setAccount] = useState("123456");
+  const [account, setAccount] = useState("Lincoln");
   const [password, setPassword] = useState("123456");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +43,7 @@ export default function LoginPage() {
   return (
     <Card className="p-6 shadow-surface">
       <Card.Header className="flex flex-col items-start gap-1 pb-0">
-        <Card.Title className="text-2xl">登录</Card.Title>
+        <Card.Title className="type-heading-large">登录</Card.Title>
         <Card.Description>连接 pearProjectApi Legacy 接口</Card.Description>
       </Card.Header>
       <Card.Content className="pt-6">
