@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import clsx from "clsx";
 import {
   Button,
-  Card,
   Chip,
   InputGroup,
   Label,
@@ -15,6 +15,16 @@ import {
 import * as eventsApi from "@/api/events";
 import type { EventItem } from "@/api/events";
 import { fetchSelfProjects } from "@/api/project";
+import { DatetimeInput } from "@/components/datetime-input";
+import { SimpleDataTable } from "@/components/simple-data-table";
+import { PageHeader } from "@/components/typography";
+import {
+  apiDatetimeToLocal,
+  defaultDatetimeRange,
+  formatListDateTime,
+  localDatetimeToApi,
+  pickDateField,
+} from "@/lib/datetime";
 import type { ProjectSummary } from "@/types/api";
 
 const tabs = [
@@ -25,17 +35,45 @@ const tabs = [
 
 type TabKey = (typeof tabs)[number]["key"];
 
+type EventFormState = {
+  projectCode: string;
+  title: string;
+  beginLocal: string;
+  endLocal: string;
+};
+
+function eventBeginTime(ev: EventItem) {
+  return pickDateField(ev, "begin_time", "beginTime");
+}
+
+function eventEndTime(ev: EventItem) {
+  return pickDateField(ev, "end_time", "endTime");
+}
+
+function emptyForm(projectCode: string): EventFormState {
+  const { begin, end } = defaultDatetimeRange();
+  return { projectCode, title: "", beginLocal: begin, endLocal: end };
+}
+
+function formFromEvent(ev: EventItem): EventFormState {
+  return {
+    projectCode: ev.project_code ?? "",
+    title: ev.title ?? "",
+    beginLocal: apiDatetimeToLocal(eventBeginTime(ev)),
+    endLocal: apiDatetimeToLocal(eventEndTime(ev)),
+  };
+}
+
 export default function EventsPage() {
   const [tab, setTab] = useState<TabKey>("all");
   const [events, setEvents] = useState<EventItem[]>([]);
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
-  const [projectCode, setProjectCode] = useState("");
-  const [title, setTitle] = useState("");
-  const [beginTime, setBeginTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [confirming, setConfirming] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
+  const [editingCode, setEditingCode] = useState<string | null>(null);
+  const [form, setForm] = useState<EventFormState>(emptyForm(""));
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -55,132 +93,215 @@ export default function EventsPage() {
   }, [tab]);
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
   useEffect(() => {
-    fetchSelfProjects(1, 30)
+    fetchSelfProjects(1, 50)
       .then((d) => {
-        setProjects(d.list ?? []);
-        if (d.list?.[0]?.code) setProjectCode(d.list[0].code);
+        const list = d.list ?? [];
+        setProjects(list);
+        if (list[0]?.code) {
+          setForm((prev) => (prev.projectCode ? prev : emptyForm(list[0].code)));
+        }
       })
       .catch(() => setProjects([]));
   }, []);
 
-  async function handleCreate() {
-    if (!projectCode || !title.trim() || !beginTime || !endTime) return;
+  function openCreate() {
+    const code = form.projectCode || projects[0]?.code || "";
+    setForm(emptyForm(code));
+    setEditingCode(null);
+    setModalMode("create");
+  }
+
+  function openEdit(ev: EventItem) {
+    setForm(formFromEvent(ev));
+    setEditingCode(ev.code);
+    setModalMode("edit");
+  }
+
+  function closeModal() {
+    setModalMode(null);
+    setEditingCode(null);
+  }
+
+  async function handleSave() {
+    if (!form.projectCode || !form.title.trim() || !form.beginLocal || !form.endLocal) {
+      setError("请填写标题与开始、结束时间");
+      return;
+    }
+    const beginTime = localDatetimeToApi(form.beginLocal);
+    const endTime = localDatetimeToApi(form.endLocal);
+    if (new Date(beginTime.replace(/-/g, "/")) >= new Date(endTime.replace(/-/g, "/"))) {
+      setError("结束时间须晚于开始时间");
+      return;
+    }
+
     setSaving(true);
+    setError(null);
     try {
-      await eventsApi.createEvent({
-        projectCode,
-        title: title.trim(),
-        beginTime,
-        endTime,
-      });
-      setOpen(false);
-      setTitle("");
+      if (modalMode === "edit" && editingCode) {
+        await eventsApi.updateEvent(editingCode, {
+          projectCode: form.projectCode,
+          title: form.title.trim(),
+          beginTime,
+          endTime,
+        });
+      } else {
+        await eventsApi.createEvent({
+          projectCode: form.projectCode,
+          title: form.title.trim(),
+          beginTime,
+          endTime,
+        });
+      }
+      closeModal();
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "创建失败");
+      setError(e instanceof Error ? e.message : "保存失败");
     } finally {
       setSaving(false);
     }
   }
 
   async function handleConfirm(code: string) {
+    setConfirming(code);
     try {
       await eventsApi.confirmEvent(code, 1);
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "确认失败");
+    } finally {
+      setConfirming(null);
     }
   }
 
+  const showConfirmAction = tab === "confirm";
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      <PageHeader
+        actions={<Button onPress={openCreate}>新建日程</Button>}
+        description="查看与管理个人及项目日程"
+        title="日程"
+      />
+
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-semibold">日程</h2>
-          <p className="text-sm text-muted mt-1">Legacy `project/events/*`</p>
+        <div className="flex gap-1 border-b border-separator">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              className={clsx(
+                "type-body px-4 py-2.5 -mb-px border-b-2 transition-colors",
+                tab === t.key
+                  ? "border-[var(--ads-color-brand)] text-[var(--ads-color-text-selected)] font-medium"
+                  : "border-transparent text-subtle hover:text-foreground",
+              )}
+              type="button"
+              onClick={() => setTab(t.key)}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
-        <Button onPress={() => setOpen(true)}>新建日程</Button>
+        {!loading ? <p className="type-meta">共 {events.length} 条</p> : null}
       </div>
 
-      <div className="flex gap-1 border-b border-separator">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            className={`px-4 py-2 text-sm -mb-px border-b-2 transition-colors ${
-              tab === t.key
-                ? "border-accent text-accent font-medium"
-                : "border-transparent text-muted hover:text-foreground"
-            }`}
-            type="button"
-            onClick={() => setTab(t.key)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {error ? <p className="text-sm text-danger">{error}</p> : null}
+      {error && !modalMode ? (
+        <p className="type-body rounded-md bg-danger/10 px-3 py-2 text-danger">{error}</p>
+      ) : null}
 
       {loading ? (
         <div className="flex justify-center py-16">
           <Spinner />
         </div>
       ) : (
-        <div className="space-y-3">
-          {events.map((ev) => (
-            <Card key={ev.code} className="p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="font-medium">{ev.title}</p>
-                  <p className="text-sm text-muted mt-1">
-                    {ev.begin_time} — {ev.end_time}
-                  </p>
-                  {ev.projectName ? (
-                    <p className="text-xs text-muted mt-1">项目：{ev.projectName}</p>
-                  ) : null}
-                </div>
-                <div className="flex gap-2">
-                  {ev.waitConfirm ? (
-                    <Button size="sm" onPress={() => handleConfirm(ev.code)}>
-                      确认参加
+        <div className="overflow-x-auto rounded-lg border border-separator">
+          <SimpleDataTable
+            emptyHint={
+              tab === "confirm" ? "暂无待确认日程" : tab === "mine" ? "暂无我的日程" : "暂无日程"
+            }
+            headers={["标题", "项目", "开始时间", "结束时间", "操作"]}
+            rows={events.map((ev) => {
+              const begin = eventBeginTime(ev);
+              const end = eventEndTime(ev);
+              return {
+                key: ev.code,
+                cells: [
+                  <span
+                    key="title"
+                    className="type-body inline-flex flex-wrap items-center gap-2 font-medium"
+                  >
+                    {ev.title || "（无标题）"}
+                    {ev.all_day ? (
+                      <Chip size="sm" variant="soft">
+                        全天
+                      </Chip>
+                    ) : null}
+                  </span>,
+                  <span key="project" className="type-body text-subtle">
+                    {ev.projectName || ev.project_code || "—"}
+                  </span>,
+                  <button
+                    key="begin"
+                    className="type-body whitespace-nowrap text-left text-subtle hover:text-foreground hover:underline"
+                    title="点击编辑时间"
+                    type="button"
+                    onClick={() => openEdit(ev)}
+                  >
+                    {formatListDateTime(begin)}
+                  </button>,
+                  <button
+                    key="end"
+                    className="type-body whitespace-nowrap text-left text-subtle hover:text-foreground hover:underline"
+                    title="点击编辑时间"
+                    type="button"
+                    onClick={() => openEdit(ev)}
+                  >
+                    {formatListDateTime(end)}
+                  </button>,
+                ],
+                action: (
+                  <div className="flex justify-end gap-2">
+                    {showConfirmAction || ev.waitConfirm ? (
+                      <Button
+                        isPending={confirming === ev.code}
+                        size="sm"
+                        variant="secondary"
+                        onPress={() => void handleConfirm(ev.code)}
+                      >
+                        {showConfirmAction ? "接受邀请" : "确认参加"}
+                      </Button>
+                    ) : null}
+                    <Button size="sm" variant="tertiary" onPress={() => openEdit(ev)}>
+                      编辑
                     </Button>
-                  ) : null}
-                  {tab === "confirm" ? (
-                    <Button size="sm" onPress={() => handleConfirm(ev.code)}>
-                      接受邀请
-                    </Button>
-                  ) : null}
-                  {ev.all_day ? (
-                    <Chip size="sm" variant="soft">
-                      全天
-                    </Chip>
-                  ) : null}
-                </div>
-              </div>
-            </Card>
-          ))}
-          {!events.length ? (
-            <Card className="p-8 text-center text-muted">暂无日程</Card>
-          ) : null}
+                  </div>
+                ),
+              };
+            })}
+          />
         </div>
       )}
 
-      <Modal.Backdrop isOpen={open} onOpenChange={setOpen}>
+      <Modal.Backdrop isOpen={modalMode !== null} onOpenChange={(open) => !open && closeModal()}>
         <Modal.Container>
           <Modal.Dialog>
             <Modal.CloseTrigger />
             <Modal.Header>
-              <Modal.Heading>新建日程</Modal.Heading>
+              <Modal.Heading>{modalMode === "edit" ? "编辑日程" : "新建日程"}</Modal.Heading>
             </Modal.Header>
             <Modal.Body className="space-y-4">
+              {error && modalMode ? (
+                <p className="type-body rounded-md bg-danger/10 px-3 py-2 text-danger">{error}</p>
+              ) : null}
               <Select
                 aria-label="项目"
-                selectedKey={projectCode}
-                onSelectionChange={(key) => setProjectCode(String(key))}
+                selectedKey={form.projectCode}
+                onSelectionChange={(key) =>
+                  setForm((prev) => ({ ...prev, projectCode: String(key) }))
+                }
               >
                 <Label>所属项目</Label>
                 <Select.Trigger>
@@ -201,36 +322,31 @@ export default function EventsPage() {
               <TextField isRequired name="title">
                 <Label>标题</Label>
                 <InputGroup>
-                  <InputGroup.Input value={title} onChange={(e) => setTitle(e.target.value)} />
-                </InputGroup>
-              </TextField>
-              <TextField isRequired name="begin">
-                <Label>开始时间</Label>
-                <InputGroup>
                   <InputGroup.Input
-                    placeholder="2030-01-01 10:00:00"
-                    value={beginTime}
-                    onChange={(e) => setBeginTime(e.target.value)}
+                    value={form.title}
+                    onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
                   />
                 </InputGroup>
               </TextField>
-              <TextField isRequired name="end">
-                <Label>结束时间</Label>
-                <InputGroup>
-                  <InputGroup.Input
-                    placeholder="2030-01-01 11:00:00"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                  />
-                </InputGroup>
-              </TextField>
+              <DatetimeInput
+                isRequired
+                label="开始时间"
+                value={form.beginLocal}
+                onChange={(beginLocal) => setForm((prev) => ({ ...prev, beginLocal }))}
+              />
+              <DatetimeInput
+                isRequired
+                label="结束时间"
+                value={form.endLocal}
+                onChange={(endLocal) => setForm((prev) => ({ ...prev, endLocal }))}
+              />
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="tertiary" onPress={() => setOpen(false)}>
+              <Button variant="tertiary" onPress={closeModal}>
                 取消
               </Button>
-              <Button isPending={saving} onPress={handleCreate}>
-                创建
+              <Button isPending={saving} onPress={() => void handleSave()}>
+                {modalMode === "edit" ? "保存" : "创建"}
               </Button>
             </Modal.Footer>
           </Modal.Dialog>

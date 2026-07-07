@@ -23,7 +23,7 @@ async function fetchEventList(
   path: string,
   params: Record<string, string | number | undefined> = {},
 ): Promise<EventListResult> {
-  const res = await post<EventListResult>(path, { page: 1, pageSize: 20, ...params });
+  const res = await post<EventListResult>(path, { page: 1, pageSize: 100, ...params });
   if (!isOk(res)) throw new Error(res.msg || "获取日程失败");
   return { list: res.data?.list ?? [], total: res.data?.total ?? 0 };
 }
@@ -70,6 +70,31 @@ export async function fetchEvent(eventsCode: string) {
 export async function confirmEvent(eventsCode: string, status = 1) {
   const res = await post("project/events/confirmJoin", { eventsCode, status });
   if (!isOk(res)) throw new Error(res.msg || "确认日程失败");
+}
+
+export async function updateEvent(
+  code: string,
+  input: {
+    projectCode?: string;
+    title?: string;
+    description?: string;
+    beginTime?: string;
+    endTime?: string;
+    position?: string;
+    allDay?: number;
+  },
+) {
+  const res = await post("project/events/edit", {
+    code,
+    project_code: input.projectCode,
+    title: input.title,
+    description: input.description,
+    begin_time: input.beginTime,
+    end_time: input.endTime,
+    position: input.position,
+    all_day: input.allDay,
+  });
+  if (!isOk(res)) throw new Error(res.msg || "更新日程失败");
 }
 
 export async function fetchCalendarEvents(date: string, memberCodes: string[]) {

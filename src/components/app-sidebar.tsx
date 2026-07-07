@@ -1,33 +1,32 @@
 import { Link, useLocation } from "react-router-dom";
-import { Button } from "@heroui/react";
 import clsx from "clsx";
 import { useMemo } from "react";
 
+import { NavIcon, SidebarPanelIcon } from "@/components/nav-icon";
 import { PearLogo } from "@/components/pear-logo";
-import { ThemeSwitch } from "@/components/theme-switch";
+import { SidebarQuickAccessSection } from "@/components/sidebar-quick-access-section";
+import { SidebarStarredSection } from "@/components/sidebar-starred-section";
 import { siteConfig } from "@/config/site";
 import { menuToNavRoutes } from "@/lib/menu";
 import { useAuthStore } from "@/stores/auth";
+import { useLayoutStore } from "@/stores/layout";
 
 export function AppSidebar() {
   const location = useLocation();
-  const member = useAuthStore((s) => s.member);
   const menuList = useAuthStore((s) => s.menuList);
-  const logout = useAuthStore((s) => s.logout);
+  const collapsed = useLayoutStore((s) => s.sidebarCollapsed);
+  const toggleSidebar = useLayoutStore((s) => s.toggleSidebar);
 
   const navItems = useMemo(() => {
     const fromMenu = menuToNavRoutes(menuList);
     const extras = [
       { label: "我的任务", href: "/my-tasks" },
-      { label: "任务搜索", href: "/search" },
       { label: "回收站", href: "/recycle" },
       { label: "归档", href: "/archive" },
       { label: "日程", href: "/events" },
       { label: "数据分析", href: "/analytics" },
       { label: "项目模板", href: "/templates" },
       { label: "团队管理", href: "/team/members" },
-      { label: "通知", href: "/notifications" },
-      { label: "个人设置", href: "/settings" },
     ];
     const merged = [...fromMenu];
     for (const item of extras) {
@@ -36,49 +35,73 @@ export function AppSidebar() {
     return merged;
   }, [menuList]);
 
+  const sidebarWidth = collapsed ? 64 : 240;
+
   return (
-    <aside className="flex h-full w-64 shrink-0 flex-col border-r border-separator bg-surface/40">
-      <div className="flex items-center gap-2 border-b border-separator px-5 py-4">
-        <PearLogo />
-        <div>
-          <p className="font-semibold leading-tight">{siteConfig.name}</p>
-          <p className="text-xs text-muted">Hero · React</p>
-        </div>
+    <aside
+      className={clsx(
+        "flex h-full shrink-0 flex-col border-r border-separator bg-surface transition-[width] duration-200",
+        collapsed ? "w-16" : "w-60",
+      )}
+    >
+      <div
+        className={clsx(
+          "flex h-12 items-center border-b border-separator",
+          collapsed ? "justify-center px-2" : "gap-1 px-3",
+        )}
+      >
+        {!collapsed ? (
+          <>
+            <Link
+              className="flex min-w-0 flex-1 items-center gap-2 rounded-md py-1 pr-1 hover:opacity-90"
+              title={siteConfig.name}
+              to="/workbench"
+            >
+              <PearLogo />
+              <span className="type-heading-xsmall truncate">{siteConfig.name}</span>
+            </Link>
+            <button
+              aria-label="收起侧栏"
+              className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-subtle hover:bg-[var(--ads-color-background-neutral)] hover:text-foreground"
+              title="收起侧栏"
+              type="button"
+              onClick={toggleSidebar}
+            >
+              <SidebarPanelIcon className="size-[1.125rem]" />
+            </button>
+          </>
+        ) : (
+          <Link aria-label={siteConfig.name} title={siteConfig.name} to="/workbench">
+            <PearLogo />
+          </Link>
+        )}
       </div>
 
-      <nav className="flex-1 space-y-1 p-3">
+      <nav className={clsx("flex-1 space-y-0.5 overflow-y-auto", collapsed ? "p-2" : "p-2")}>
         {navItems.map((item) => {
           const active = location.pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
               className={clsx(
-                "block rounded-lg px-3 py-2 text-sm transition-colors",
+                "flex items-center rounded-md type-body transition-colors",
+                collapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2",
                 active
-                  ? "bg-accent/15 text-accent font-medium"
-                  : "text-foreground hover:bg-default-100",
+                  ? "bg-[var(--ads-color-background-selected)] text-[var(--ads-color-text-selected)] font-medium"
+                  : "text-foreground hover:bg-[var(--ads-color-background-neutral)]",
               )}
+              title={item.label}
               to={item.href}
             >
-              {item.label}
+              <NavIcon className="shrink-0 opacity-85" href={item.href} label={item.label} />
+              {!collapsed ? <span className="truncate">{item.label}</span> : null}
             </Link>
           );
         })}
       </nav>
 
-      <div className="border-t border-separator p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted">主题</span>
-          <ThemeSwitch />
-        </div>
-        <div className="text-sm">
-          <p className="font-medium truncate">{member?.name ?? "用户"}</p>
-          <p className="text-xs text-muted truncate">{member?.email ?? member?.mobile}</p>
-        </div>
-        <Button className="w-full" size="sm" variant="tertiary" onPress={() => logout()}>
-          退出登录
-        </Button>
-      </div>
+      <SidebarQuickAccessSection collapsed={collapsed} />
+      <SidebarStarredSection collapsed={collapsed} sidebarWidth={sidebarWidth} />
     </aside>
   );
 }

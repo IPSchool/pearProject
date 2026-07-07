@@ -18,10 +18,10 @@ export function TeamTabs() {
           <Link
             key={tab.href}
             className={clsx(
-              "px-4 py-2 text-sm -mb-px border-b-2 transition-colors",
+              "type-body px-4 py-2.5 -mb-px border-b-2 transition-colors",
               active
-                ? "border-accent text-accent font-medium"
-                : "border-transparent text-muted hover:text-foreground",
+                ? "border-[var(--ads-color-brand)] text-[var(--ads-color-text-selected)] font-medium"
+                : "border-transparent text-subtle hover:text-foreground",
             )}
             to={tab.href}
           >

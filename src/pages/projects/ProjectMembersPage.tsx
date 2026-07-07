@@ -13,6 +13,7 @@ import * as inviteApi from "@/api/invite";
 import * as memberApi from "@/api/member";
 import type { ProjectMember } from "@/types/api";
 import { MemberAvatar } from "@/components/member-avatar";
+import { PageHeader } from "@/components/typography";
 
 export default function ProjectMembersPage() {
   const { code: projectCode = "" } = useParams<{ code: string }>();
@@ -102,12 +103,15 @@ export default function ProjectMembersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold">项目成员</h2>
-        <Button isPending={inviting} size="sm" onPress={handleCreateInvite}>
-          生成邀请链接
-        </Button>
-      </div>
+      <PageHeader
+        actions={
+          <Button isPending={inviting} size="sm" onPress={handleCreateInvite}>
+            生成邀请链接
+          </Button>
+        }
+        size="medium"
+        title="项目成员"
+      />
       {inviteCode ? (
         <Card className="p-4 bg-accent/5">
           <p className="text-sm font-medium">邀请码</p>

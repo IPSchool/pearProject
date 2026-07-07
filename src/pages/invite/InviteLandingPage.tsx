@@ -71,7 +71,7 @@ export default function InviteLandingPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-6">
       <Card className="w-full max-w-md p-8 space-y-4">
-        <h1 className="text-xl font-semibold">{isOrgInvite ? "组织邀请" : "项目邀请"}</h1>
+        <h1 className="type-heading-medium">{isOrgInvite ? "组织邀请" : "项目邀请"}</h1>
         {error && !detail ? (
           <p className="text-danger text-sm">{error}</p>
         ) : (

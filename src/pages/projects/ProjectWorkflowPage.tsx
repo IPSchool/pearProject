@@ -4,6 +4,7 @@ import { Button, Card, InputGroup, Label, Modal, Spinner, TextField } from "@her
 
 import * as workflowApi from "@/api/workflow";
 import type { TaskWorkflow } from "@/api/workflow";
+import { PageHeader } from "@/components/typography";
 
 export default function ProjectWorkflowPage() {
   const { code: projectCode = "" } = useParams<{ code: string }>();
@@ -53,10 +54,11 @@ export default function ProjectWorkflowPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">任务工作流</h2>
-        <Button onPress={() => setOpen(true)}>新建工作流</Button>
-      </div>
+      <PageHeader
+        actions={<Button onPress={() => setOpen(true)}>新建工作流</Button>}
+        size="medium"
+        title="任务工作流"
+      />
       {error ? <p className="text-sm text-danger">{error}</p> : null}
       {loading ? (
         <div className="flex justify-center py-16"><Spinner /></div>

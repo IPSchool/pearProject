@@ -4,6 +4,7 @@ import { Card, Spinner } from "@heroui/react";
 import * as analysisApi from "@/api/analysis";
 import type { ProjectAnalysis } from "@/api/analysis";
 import { SimpleBarChart } from "@/components/simple-bar-chart";
+import { PageHeader } from "@/components/typography";
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<ProjectAnalysis | null>(null);
@@ -41,38 +42,35 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold">数据分析</h2>
-        <p className="text-sm text-muted mt-1">对接 `project/project/analysis`</p>
-      </div>
+      <PageHeader description="对接 `project/project/analysis`" title="数据分析" />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="p-4">
-          <p className="text-sm text-muted">项目总数</p>
-          <p className="text-3xl font-bold mt-2">{data.projectCount}</p>
+          <p className="type-label">项目总数</p>
+          <p className="type-heading-xlarge mt-2">{data.projectCount}</p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-muted">平均进度</p>
-          <p className="text-3xl font-bold mt-2">{Math.round(data.projectSchedule * 100)}%</p>
+          <p className="type-label">平均进度</p>
+          <p className="type-heading-xlarge mt-2">{Math.round(data.projectSchedule * 100)}%</p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-muted">任务总数</p>
-          <p className="text-3xl font-bold mt-2">{data.taskCount}</p>
+          <p className="type-label">任务总数</p>
+          <p className="type-heading-xlarge mt-2">{data.taskCount}</p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-muted">逾期率</p>
-          <p className="text-3xl font-bold mt-2">{data.taskOverduePercent}%</p>
-          <p className="text-xs text-muted mt-1">逾期 {data.taskOverdueCount} 项</p>
+          <p className="type-label">逾期率</p>
+          <p className="type-heading-xlarge mt-2">{data.taskOverduePercent}%</p>
+          <p className="type-hint mt-1">逾期 {data.taskOverdueCount} 项</p>
         </Card>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="p-5">
-          <h3 className="font-medium mb-4">月度新建项目</h3>
+          <h3 className="type-heading-xsmall mb-4">月度新建项目</h3>
           <SimpleBarChart data={projectChart} />
         </Card>
         <Card className="p-5">
-          <h3 className="font-medium mb-4">本月每日新建任务</h3>
+          <h3 className="type-heading-xsmall mb-4">本月每日新建任务</h3>
           <SimpleBarChart data={taskChart} />
         </Card>
       </div>

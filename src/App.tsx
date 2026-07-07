@@ -13,6 +13,13 @@ import EventsPage from "@/pages/events/EventsPage";
 import RecycleBinPage from "@/pages/recycle/RecycleBinPage";
 import SearchPage from "@/pages/search/SearchPage";
 import NotificationsPage from "@/pages/notifications/NotificationsPage";
+import ProjectBacklogPage from "@/pages/projects/ProjectBacklogPage";
+import ProjectCalendarPage from "@/pages/projects/ProjectCalendarPage";
+import ProjectFormsPage from "@/pages/projects/ProjectFormsPage";
+import ProjectListViewPage from "@/pages/projects/ProjectListViewPage";
+import ProjectTimelinePage from "@/pages/projects/ProjectTimelinePage";
+import ProjectWikiEditorPage from "@/pages/projects/ProjectWikiEditorPage";
+import ProjectWikiPage from "@/pages/projects/ProjectWikiPage";
 import ProjectFilesPage from "@/pages/projects/ProjectFilesPage";
 import ProjectListPage from "@/pages/projects/ProjectListPage";
 import ProjectMembersPage from "@/pages/projects/ProjectMembersPage";
@@ -20,8 +27,11 @@ import ProjectTasksPage from "@/pages/projects/ProjectTasksPage";
 import ProjectVersionsPage from "@/pages/projects/ProjectVersionsPage";
 import ProjectOverviewPage from "@/pages/projects/ProjectOverviewPage";
 import ProjectTagsPage from "@/pages/projects/ProjectTagsPage";
+import ProjectSettingsPage from "@/pages/projects/ProjectSettingsPage";
 import ProjectWorkflowPage from "@/pages/projects/ProjectWorkflowPage";
 import MyTasksPage from "@/pages/tasks/MyTasksPage";
+import TaskDetailPage from "@/pages/tasks/TaskDetailPage";
+import BrowseIssuePage from "@/pages/tasks/BrowseIssuePage";
 import SettingsPage from "@/pages/settings/SettingsPage";
 import TeamAccountsPage from "@/pages/team/TeamAccountsPage";
 import TeamMembersPage from "@/pages/team/TeamMembersPage";
@@ -48,6 +58,7 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route element={<MyTasksPage />} path="/my-tasks" />
+          <Route element={<BrowseIssuePage />} path="/browse/:issueKey" />
           <Route element={<WorkbenchPage />} path="/workbench" />
           <Route element={<EventsPage />} path="/events" />
           <Route element={<AnalyticsPage />} path="/analytics" />
@@ -70,12 +81,21 @@ function App() {
           </Route>
           <Route element={<ProjectLayout />} path="/project/:code">
             <Route element={<ProjectOverviewPage />} path="overview" />
+            <Route element={<ProjectListViewPage />} path="list" />
             <Route element={<ProjectTasksPage />} path="tasks" />
+            <Route element={<TaskDetailPage />} path="tasks/:taskRef" />
+            <Route element={<ProjectCalendarPage />} path="calendar" />
+            <Route element={<ProjectTimelinePage />} path="timeline" />
+            <Route element={<ProjectWikiPage />} path="wiki" />
+            <Route element={<ProjectWikiEditorPage />} path="wiki/:pageCode" />
+            <Route element={<ProjectFormsPage />} path="forms" />
+            <Route element={<ProjectBacklogPage />} path="backlog" />
+            <Route element={<ProjectVersionsPage />} path="versions" />
             <Route element={<ProjectMembersPage />} path="members" />
             <Route element={<ProjectFilesPage />} path="files" />
             <Route element={<ProjectTagsPage />} path="tags" />
-            <Route element={<ProjectVersionsPage />} path="versions" />
             <Route element={<ProjectWorkflowPage />} path="workflow" />
+            <Route element={<ProjectSettingsPage />} path="settings" />
             <Route element={<Navigate replace to="overview" />} index />
           </Route>
         </Route>

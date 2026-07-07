@@ -3,6 +3,8 @@ import { Button, Card, InputGroup, Label, Modal, Spinner, TextField } from "@her
 
 import * as templateApi from "@/api/template";
 import * as stagesTplApi from "@/api/taskStagesTemplate";
+import { ProjectCoverImage } from "@/components/project-cover-image";
+import { PageHeader } from "@/components/typography";
 import type { ProjectTemplate } from "@/api/template";
 import type { TaskStagesTemplate } from "@/types/api";
 
@@ -69,13 +71,11 @@ export default function TemplateListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold">项目模板</h2>
-          <p className="text-muted text-sm mt-1">从模板快速创建项目（Legacy projectTemplate）</p>
-        </div>
-        <Button onPress={() => setOpen(true)}>新建模板</Button>
-      </div>
+      <PageHeader
+        actions={<Button onPress={() => setOpen(true)}>新建模板</Button>}
+        description="从模板快速创建项目（Legacy projectTemplate）"
+        title="项目模板"
+      />
       {error ? <p className="text-sm text-danger">{error}</p> : null}
       {loading ? (
         <div className="flex justify-center py-16"><Spinner /></div>
@@ -87,11 +87,7 @@ export default function TemplateListPage() {
               className={`overflow-hidden cursor-pointer ${selectedTpl === t.code ? "ring-2 ring-accent" : ""}`}
               onClick={() => setSelectedTpl(t.code)}
             >
-              {t.cover ? (
-                <img alt="" className="h-28 w-full object-cover" src={t.cover} />
-              ) : (
-                <div className="h-28 bg-accent/10" />
-              )}
+              <ProjectCoverImage cover={t.cover} />
               <div className="p-4">
                 <p className="font-semibold">{t.name}</p>
                 <p className="text-sm text-muted mt-1 line-clamp-2">{t.description}</p>

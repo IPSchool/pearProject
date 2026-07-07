@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Button, Card, Chip, Spinner } from "@heroui/react";
 
 import * as fileApi from "@/api/file";
+import { PageHeader } from "@/components/typography";
 import type { ProjectFile } from "@/api/file";
 
 export default function ProjectFilesPage() {
@@ -45,24 +46,27 @@ export default function ProjectFilesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <h2 className="text-xl font-semibold">项目文件</h2>
-        <div>
-          <input
-            ref={inputRef}
-            className="hidden"
-            type="file"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) onUpload(f);
-              e.target.value = "";
-            }}
-          />
-          <Button isPending={uploading} onPress={() => inputRef.current?.click()}>
-            上传文件
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        actions={
+          <>
+            <input
+              ref={inputRef}
+              className="hidden"
+              type="file"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) onUpload(f);
+                e.target.value = "";
+              }}
+            />
+            <Button isPending={uploading} onPress={() => inputRef.current?.click()}>
+              上传文件
+            </Button>
+          </>
+        }
+        size="medium"
+        title="项目文件"
+      />
 
       {error ? <p className="text-sm text-danger">{error}</p> : null}
 

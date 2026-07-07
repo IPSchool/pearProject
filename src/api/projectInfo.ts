@@ -25,6 +25,21 @@ export async function createProjectInfoBlock(
   return res.data;
 }
 
+export async function editProjectInfoBlock(
+  infoCode: string,
+  name: string,
+  value = "",
+  description = "",
+) {
+  const res = await post("project/projectInfo/edit", {
+    infoCode,
+    name,
+    value,
+    description,
+  });
+  if (!isOk(res)) throw new Error(res.msg || "更新信息块失败");
+}
+
 export async function deleteProjectInfoBlock(infoCode: string) {
   const res = await post("project/projectInfo/delete", { infoCode });
   if (!isOk(res)) throw new Error(res.msg || "删除信息块失败");

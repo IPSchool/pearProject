@@ -1,0 +1,78 @@
+/**
+ * Atlassian Design System tokens (from pearProjectDocs/DESIGN.md).
+ * Atlassian Sans is proprietary; Inter is the documented base — used as the web fallback.
+ */
+
+:root {
+  /* Typography families */
+  --ads-font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ads-font-family-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+
+  /* Typography scale */
+  --ads-font-size-body: 0.875rem;
+  --ads-line-height-body: 1.25rem;
+  --ads-font-size-body-small: 0.75rem;
+  --ads-line-height-body-small: 1rem;
+  --ads-font-size-body-large: 1rem;
+  --ads-line-height-body-large: 1.5rem;
+
+  --ads-font-size-heading-xxlarge: 2rem;
+  --ads-line-height-heading-xxlarge: 2.25rem;
+  --ads-font-size-heading-xlarge: 1.75rem;
+  --ads-line-height-heading-xlarge: 2rem;
+  --ads-font-size-heading-large: 1.5rem;
+  --ads-line-height-heading-large: 1.75rem;
+  --ads-font-size-heading-medium: 1.25rem;
+  --ads-line-height-heading-medium: 1.5rem;
+  --ads-font-size-heading-small: 1rem;
+  --ads-line-height-heading-small: 1.25rem;
+  --ads-font-size-heading-xsmall: 0.875rem;
+  --ads-line-height-heading-xsmall: 1.25rem;
+
+  --ads-font-weight-regular: 400;
+  --ads-font-weight-medium: 500;
+  --ads-font-weight-semibold: 600;
+
+  /* Neutrals & surfaces */
+  --ads-color-text: #292a2e;
+  --ads-color-text-subtle: #505258;
+  --ads-color-text-subtlest: #6b6e76;
+  --ads-color-text-selected: #1868db;
+  --ads-color-text-brand: #1868db;
+  --ads-color-link: #1868db;
+  --ads-color-link-pressed: #1558bc;
+  --ads-color-border: rgb(11 18 14 / 0.14);
+  --ads-color-border-bold: #7d818a;
+  --ads-color-surface: #ffffff;
+  --ads-color-surface-sunken: #f8f8f8;
+  --ads-color-surface-raised: #ffffff;
+  --ads-color-background-neutral: rgb(5 21 36 / 0.06);
+  --ads-color-background-selected: #e9f2fe;
+  --ads-color-brand: #1868db;
+  --ads-color-brand-hover: #1558bc;
+
+  /* Radius */
+  --ads-radius-small: 0.25rem;
+  --ads-radius-medium: 0.375rem;
+  --ads-radius-large: 0.5rem;
+  --ads-radius-xlarge: 0.75rem;
+}
+
+.dark {
+  --ads-color-text: #eceef0;
+  --ads-color-text-subtle: #aeb2b8;
+  --ads-color-text-subtlest: #8c8f97;
+  --ads-color-text-selected: #579dff;
+  --ads-color-text-brand: #579dff;
+  --ads-color-link: #579dff;
+  --ads-color-link-pressed: #85b8ff;
+  --ads-color-border: rgb(255 255 255 / 0.14);
+  --ads-color-border-bold: #6b6e76;
+  --ads-color-surface: #1e1f21;
+  --ads-color-surface-sunken: #161617;
+  --ads-color-surface-raised: #282a2d;
+  --ads-color-background-neutral: rgb(255 255 255 / 0.06);
+  --ads-color-background-selected: rgb(56 139 255 / 0.12);
+  --ads-color-brand: #579dff;
+  --ads-color-brand-hover: #85b8ff;
+}

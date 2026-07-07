@@ -105,7 +105,7 @@ export default function TeamMemberProfilePage() {
         <div className="flex items-start gap-4">
           <MemberAvatar className="size-14" name={profile.name} src={profile.avatar} />
           <div className="flex-1">
-            <h3 className="text-xl font-semibold">{profile.name}</h3>
+            <h3 className="type-heading-medium">{profile.name}</h3>
             <p className="text-muted text-sm mt-1">{profile.email}</p>
             <p className="text-muted text-sm">{profile.mobile || "未绑定手机"}</p>
             {profile.departments ? (

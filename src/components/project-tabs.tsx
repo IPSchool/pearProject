@@ -1,54 +1,77 @@
-import { Link, useLocation, useParams } from "react-router-dom";
-
-import { useProjectContext } from "@/contexts/project-context";
+import { Link, useLocation } from "react-router-dom";
 import clsx from "clsx";
 
-const tabs = [
-  { key: "overview", label: "概览", suffix: "/overview" },
-  { key: "tasks", label: "看板", suffix: "/tasks" },
-  { key: "members", label: "成员", suffix: "/members" },
-  { key: "files", label: "文件", suffix: "/files" },
-  { key: "tags", label: "标签", suffix: "/tags" },
-  { key: "versions", label: "版本", suffix: "/versions" },
-  { key: "workflow", label: "工作流", suffix: "/workflow" },
-] as const;
+import {
+  isProjectViewActive,
+  PRIMARY_PROJECT_VIEWS,
+  SECONDARY_PROJECT_VIEWS,
+} from "@/config/project-views";
+import { useProjectContext, useProjectRoute } from "@/contexts/project-context";
 
 export function ProjectTabs() {
-  const { code = "" } = useParams<{ code: string }>();
+  const { pathId } = useProjectRoute();
   const location = useLocation();
-  const base = `/project/${code}`;
+  const base = `/project/${pathId}`;
+  const pathname = location.pathname;
 
   return (
-    <div className="flex gap-1 border-b border-separator">
-      {tabs.map((tab) => {
-        const href = `${base}${tab.suffix}`;
-        const active = location.pathname.startsWith(href);
-        return (
-          <Link
-            key={tab.key}
-            className={clsx(
-              "px-4 py-2 text-sm -mb-px border-b-2 transition-colors",
-              active
-                ? "border-accent text-accent font-medium"
-                : "border-transparent text-muted hover:text-foreground",
-            )}
-            to={href}
-          >
-            {tab.label}
-          </Link>
-        );
-      })}
+    <div className="border-b border-separator">
+      <div className="flex items-center gap-1 overflow-x-auto pb-px">
+        {PRIMARY_PROJECT_VIEWS.map((tab) => {
+          const href = `${base}${tab.suffix}`;
+          const active = isProjectViewActive(tab, pathname, base);
+          const Icon = tab.icon;
+          return (
+            <Link
+              key={tab.key}
+              className={clsx(
+                "flex shrink-0 items-center justify-center px-2.5 py-2.5 type-body -mb-px border-b-2 transition-colors sm:gap-1.5 sm:px-3",
+                active
+                  ? "border-[var(--ads-color-brand)] text-[var(--ads-color-text-selected)] font-medium"
+                  : "border-transparent text-subtle hover:text-foreground",
+              )}
+              title={tab.label}
+              to={href}
+            >
+              <Icon className="size-4 shrink-0 opacity-80" />
+              <span className="hidden sm:inline">{tab.label}</span>
+            </Link>
+          );
+        })}
+        <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-separator" />
+        {SECONDARY_PROJECT_VIEWS.map((tab) => {
+          const href = `${base}${tab.suffix}`;
+          const active = isProjectViewActive(tab, pathname, base);
+          const Icon = tab.icon;
+          return (
+            <Link
+              key={tab.key}
+              className={clsx(
+                "flex shrink-0 items-center justify-center px-2 py-2 type-body-small -mb-px border-b-2 transition-colors sm:gap-1.5 sm:px-3",
+                active
+                  ? "border-[var(--ads-color-brand)] text-[var(--ads-color-text-selected)] font-medium"
+                  : "border-transparent text-subtlest hover:text-foreground",
+              )}
+              title={tab.label}
+              to={href}
+            >
+              <Icon className="size-3.5 shrink-0 opacity-70" />
+              <span className="hidden md:inline">{tab.label}</span>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 export function ProjectBreadcrumb({ title }: { title?: string }) {
-  const { code = "" } = useParams<{ code: string }>();
   const project = useProjectContext();
-  const display = project?.name ?? code;
+  const { pathId } = useProjectRoute();
+  const display = project?.name ?? pathId;
   return (
     <div>
-      <p className="text-sm text-muted">
+      <p className="type-meta">
         <Link className="hover:underline" to="/projects">
           项目
         </Link>

@@ -1,4 +1,332 @@
 @import "tailwindcss";
 @import "@heroui/styles";
+@import "./ads-tokens.css";
 
 @custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--ads-font-family);
+  --font-mono: var(--ads-font-family-mono);
+
+  /* Map ADS neutrals to Tailwind / HeroUI semantic colors */
+  --color-foreground: var(--ads-color-text);
+  --color-muted: var(--ads-color-text-subtle);
+  --color-subtle: var(--ads-color-text-subtle);
+  --color-subtlest: var(--ads-color-text-subtlest);
+  --color-background: var(--ads-color-surface);
+  --color-surface: var(--ads-color-surface);
+  --color-surface-sunken: var(--ads-color-surface-sunken);
+  --color-separator: var(--ads-color-border);
+  --color-accent: var(--ads-color-brand);
+  --color-link: var(--ads-color-link);
+}
+
+@layer base {
+  html {
+    font-family: var(--ads-font-family);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-size: var(--ads-font-size-body);
+    line-height: var(--ads-line-height-body);
+    font-weight: var(--ads-font-weight-regular);
+    color: var(--ads-color-text);
+    background-color: var(--ads-color-surface);
+  }
+
+  a:not([class]) {
+    color: var(--ads-color-link);
+    text-decoration: none;
+  }
+
+  a:not([class]):hover {
+    color: var(--ads-color-link-pressed);
+    text-decoration: underline;
+  }
+}
+
+@layer utilities {
+  /* Heading scale — ADS typography tokens */
+  .type-heading-xxlarge {
+    font-size: var(--ads-font-size-heading-xxlarge);
+    line-height: var(--ads-line-height-heading-xxlarge);
+    font-weight: var(--ads-font-weight-semibold);
+    color: var(--ads-color-text);
+  }
+
+  .type-heading-xlarge {
+    font-size: var(--ads-font-size-heading-xlarge);
+    line-height: var(--ads-line-height-heading-xlarge);
+    font-weight: var(--ads-font-weight-semibold);
+    color: var(--ads-color-text);
+  }
+
+  .type-heading-large {
+    font-size: var(--ads-font-size-heading-large);
+    line-height: var(--ads-line-height-heading-large);
+    font-weight: var(--ads-font-weight-semibold);
+    color: var(--ads-color-text);
+  }
+
+  .type-heading-medium {
+    font-size: var(--ads-font-size-heading-medium);
+    line-height: var(--ads-line-height-heading-medium);
+    font-weight: var(--ads-font-weight-semibold);
+    color: var(--ads-color-text);
+  }
+
+  .type-heading-small {
+    font-size: var(--ads-font-size-heading-small);
+    line-height: var(--ads-line-height-heading-small);
+    font-weight: var(--ads-font-weight-semibold);
+    color: var(--ads-color-text);
+  }
+
+  .type-heading-xsmall {
+    font-size: var(--ads-font-size-heading-xsmall);
+    line-height: var(--ads-line-height-heading-xsmall);
+    font-weight: var(--ads-font-weight-semibold);
+    color: var(--ads-color-text);
+  }
+
+  /* Body scale */
+  .type-body {
+    font-size: var(--ads-font-size-body);
+    line-height: var(--ads-line-height-body);
+    font-weight: var(--ads-font-weight-regular);
+    color: var(--ads-color-text);
+  }
+
+  .type-body-large {
+    font-size: var(--ads-font-size-body-large);
+    line-height: var(--ads-line-height-body-large);
+    font-weight: var(--ads-font-weight-regular);
+    color: var(--ads-color-text);
+  }
+
+  .type-body-small {
+    font-size: var(--ads-font-size-body-small);
+    line-height: var(--ads-line-height-body-small);
+    font-weight: var(--ads-font-weight-regular);
+    color: var(--ads-color-text);
+  }
+
+  /* Metadata / labels — text-subtle per ADS */
+  .type-label {
+    font-size: var(--ads-font-size-body-small);
+    line-height: var(--ads-line-height-body-small);
+    font-weight: var(--ads-font-weight-regular);
+    color: var(--ads-color-text-subtle);
+  }
+
+  .type-meta {
+    font-size: var(--ads-font-size-body);
+    line-height: var(--ads-line-height-body);
+    font-weight: var(--ads-font-weight-regular);
+    color: var(--ads-color-text-subtle);
+  }
+
+  .type-hint {
+    font-size: var(--ads-font-size-body-small);
+    line-height: var(--ads-line-height-body-small);
+    font-weight: var(--ads-font-weight-regular);
+    color: var(--ads-color-text-subtlest);
+  }
+
+  .text-subtle {
+    color: var(--ads-color-text-subtle);
+  }
+
+  .text-subtlest {
+    color: var(--ads-color-text-subtlest);
+  }
+
+  .bg-surface-sunken {
+    background-color: var(--ads-color-surface-sunken);
+  }
+
+  /* Markdown 渲染（GitHub GFM 风格） */
+  .markdown-prose {
+    max-width: none;
+    font-size: var(--ads-font-size-body);
+    line-height: var(--ads-line-height-body);
+    color: var(--ads-color-text);
+  }
+
+  .markdown-prose :where(h1, h2, h3, h4) {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-weight: var(--ads-font-weight-semibold);
+    color: var(--ads-color-text);
+  }
+
+  .markdown-prose :where(h1, h2, h3, h4):first-child {
+    margin-top: 0;
+  }
+
+  .markdown-prose :where(h1) {
+    font-size: var(--ads-font-size-heading-medium);
+    line-height: var(--ads-line-height-heading-medium);
+  }
+
+  .markdown-prose :where(h2, h3, h4) {
+    font-size: var(--ads-font-size-heading-small);
+    line-height: var(--ads-line-height-heading-small);
+  }
+
+  .markdown-prose :where(p) {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .markdown-prose :where(ul, ol) {
+    margin: 0.5rem 0;
+    padding-left: 1.25rem;
+  }
+
+  .markdown-prose :where(ul) {
+    list-style-type: disc;
+  }
+
+  .markdown-prose :where(ol) {
+    list-style-type: decimal;
+  }
+
+  .markdown-prose :where(li + li) {
+    margin-top: 0.25rem;
+  }
+
+  .markdown-prose :where(blockquote) {
+    margin: 0.75rem 0;
+    padding-left: 1rem;
+    border-left: 4px solid var(--ads-color-border);
+    color: var(--ads-color-text-subtle);
+  }
+
+  /* 评论区：紧凑排版，隐藏遗留 blockquote */
+  .markdown-prose.markdown-prose--comment {
+    font-size: var(--ads-font-size-body);
+    line-height: 1.4286;
+  }
+
+  .markdown-prose.markdown-prose--comment :where(p) {
+    margin: 0;
+  }
+
+  .markdown-prose.markdown-prose--comment :where(p + p) {
+    margin-top: 0.375rem;
+  }
+
+  .markdown-prose.markdown-prose--comment :where(blockquote) {
+    display: none;
+  }
+
+  .comment-mention {
+    display: inline;
+    border-radius: 3px;
+    background-color: var(--ads-color-background-selected);
+    color: var(--ads-color-text-selected);
+    padding: 0.0625rem 0.25rem;
+    font-weight: 500;
+    font-size: 0.875em;
+  }
+
+  .comment-thread {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .comment-thread + .comment-thread {
+    margin-top: 1rem;
+  }
+
+  .comment-thread-replies {
+    list-style: none;
+    margin: 0.25rem 0 0 1.125rem;
+    padding: 0 0 0 0.75rem;
+    border-left: 2px solid var(--ads-color-border);
+  }
+
+  .comment-thread-reply {
+    position: relative;
+    padding: 0.375rem 0 0.375rem 0.5rem;
+  }
+
+  .comment-thread-reply + .comment-thread-reply {
+    margin-top: 0;
+  }
+
+  .comment-body-inline {
+    margin-top: 0.25rem;
+    line-height: 1.4286;
+  }
+
+  .markdown-prose :where(pre) {
+    margin: 0.75rem 0;
+    overflow-x: auto;
+    border-radius: 0.5rem;
+    background-color: var(--ads-color-surface-sunken);
+    padding: 0.75rem;
+    font-family: var(--ads-font-family-mono);
+    font-size: 0.8125rem;
+  }
+
+  .markdown-prose :where(code) {
+    border-radius: 0.25rem;
+    background-color: var(--ads-color-surface-sunken);
+    padding: 0.125rem 0.25rem;
+    font-family: var(--ads-font-family-mono);
+    font-size: 0.8125rem;
+  }
+
+  .markdown-prose :where(pre code) {
+    background: transparent;
+    padding: 0;
+  }
+
+  .markdown-prose :where(a) {
+    color: var(--ads-color-link);
+    text-decoration: none;
+  }
+
+  .markdown-prose :where(a:hover) {
+    text-decoration: underline;
+  }
+
+  .markdown-prose :where(table) {
+    margin: 0.75rem 0;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--ads-font-size-body-small);
+    text-align: left;
+  }
+
+  .markdown-prose :where(th, td) {
+    border: 1px solid var(--ads-color-border);
+    padding: 0.5rem 0.75rem;
+  }
+
+  .markdown-prose :where(th) {
+    background-color: var(--ads-color-surface-sunken);
+    font-weight: var(--ads-font-weight-semibold);
+  }
+
+  .markdown-prose :where(hr) {
+    margin: 1rem 0;
+    border-color: var(--ads-color-border);
+  }
+
+  .markdown-prose :where(img) {
+    margin: 0.5rem 0;
+    max-width: 100%;
+    border-radius: 0.25rem;
+  }
+
+  .markdown-prose--html :where(img) {
+    max-width: 100%;
+  }
+}

@@ -1,4 +1,5 @@
 import { isOk, post } from "@/api/client";
+import type { ProjectSummary } from "@/types/api";
 
 export async function setProjectCollect(projectCode: string, collect: boolean) {
   const res = await post("project/projectCollect/collect", {
@@ -9,7 +10,7 @@ export async function setProjectCollect(projectCode: string, collect: boolean) {
 }
 
 export async function fetchCollectedProjects(page = 1, pageSize = 20) {
-  const res = await post<{ list: unknown[]; total: number }>("project/project/index", {
+  const res = await post<{ list: ProjectSummary[]; total: number }>("project/project/index", {
     selectBy: "collect",
     page,
     pageSize,

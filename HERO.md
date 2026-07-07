@@ -33,6 +33,9 @@
 cd ../pearProjectApi/docker/jira && docker compose up -d
 docker exec jira-app-1 php /app/docker/jira/fixture-init.php
 
+# 修改 PHP 路由或后端代码后重启（加载新路由 / 清 opcache）
+cd ../pearProjectApi && bash restart-api.sh
+
 # 2. 前端
 cd pearProject
 git checkout Hero
@@ -82,11 +85,21 @@ src/
 
 ### 项目空间（Jira 式视图）
 
-项目页顶部为 **横向 Tab 导航**（对齐 Jira：摘要 → 列表 → 看板 → 日历 → 时间线 → 文档 → 表单 → 待办 → 版本），次要 Tab：成员 / 文件 / 标签 / 工作流。
+项目页顶部为 **横向 Tab 导航**（对齐 Jira：摘要 → 列表 → 看板 → 日历 → 时间线 → 文档 → 表单 → 待办 → 版本），次要 Tab：成员 / 文件 / 标签 / 工作流 / **设置**。
+
+**URL 编号规则**（对用户可见）：
+
+| 模式 | 项目 URL | 任务 URL | 说明 |
+|------|----------|----------|------|
+| 数字（默认） | `/project/4/overview` | `/project/4/tasks/3` | 项目用数据库 `id`，任务用项目内 `id_num` |
+| Issue Key | — | `/browse/KAN-1` | 在项目 **设置** 中启用 prefix 后生效 |
+| 评论深链 | — | `?focusedCommentId=4498` | 评论用数字 `id`，兼容 Jira |
+
+内部仍用 `code` 调用 Legacy API；访问旧长 code URL 会自动重定向到数字 id。
 
 | 视图 | 路由 | 说明 |
 |------|------|------|
-| 摘要 | `/project/:code/overview` | KPI + 7日动态 + 状态环图 + 优先级柱图 + 近期动态（`project/_projectOverview`） |
+| 摘要 | `/project/:id/overview` | KPI + 7日动态 + 未启用 Issue Key 时引导条 |
 | **列表** | `/project/:code/list` | 表格视图，列配置（localStorage）、行内编辑经办人/优先级/状态/列 |
 | 看板 | `.../tasks` | Kanban 列 + 拖拽 |
 | 日历 | `.../calendar` | 月历 + 拖拽排期（`task/edit` 设置/清除截止日） |
@@ -95,11 +108,12 @@ src/
 | 表单 | `.../forms` | 需求收集，提交后 `task/save` 创建工作项 |
 | 待办事项 | `.../backlog` | 第一列 = Backlog，其余 = 看板 |
 | 版本 | `.../versions` | `projectFeatures/*`, `projectVersion/*` |
-| 成员 / 文件 / 标签 / 工作流 | 同上 Legacy | 见下表 |
+| 成员 / 文件 / 标签 / 工作流 / **设置** | 同上 Legacy | 设置页可启用 **Issue Key**（`prefix` + `open_prefix`） |
 
 | 页面 | 路由 | Legacy API |
 |------|------|------------|
-| 概览 | `/project/:code/overview` | `project/read`, `project/edit`, `projectInfo/*`, `_projectStats` |
+| 概览 | `/project/:id/overview` | `project/read`, `project/edit`, `projectInfo/*`, `_projectStats` |
+| **设置** | `.../settings` | `project/edit`（`prefix`, `open_prefix`）— Jira Issue Key |
 | 看板 | `.../tasks` | `taskStages/*`, `task/*`, 拖拽排序 |
 | 成员 | `.../members` | `projectMember/*`, 邀请/移除 |
 | 文件 | `.../files` | `file/*` |

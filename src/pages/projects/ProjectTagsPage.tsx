@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Button, Card, Chip, InputGroup, Label, Modal, Spinner, TextField } from "@heroui/react";
 
 import * as taskTagApi from "@/api/taskTag";
+import { PageHeader } from "@/components/typography";
 import type { TaskTagItem } from "@/types/api";
 
 export default function ProjectTagsPage() {
@@ -54,10 +55,11 @@ export default function ProjectTagsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">任务标签</h2>
-        <Button onPress={() => setOpen(true)}>新建标签</Button>
-      </div>
+      <PageHeader
+        actions={<Button onPress={() => setOpen(true)}>新建标签</Button>}
+        size="medium"
+        title="任务标签"
+      />
       {error ? <p className="text-sm text-danger">{error}</p> : null}
       <div className="flex flex-wrap gap-2">
         {tags.map((t) => (

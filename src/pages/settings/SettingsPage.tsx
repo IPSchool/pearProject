@@ -10,6 +10,7 @@ import {
 import md5 from "md5";
 
 import * as authApi from "@/api/auth";
+import { PageHeader } from "@/components/typography";
 import { useAuthStore } from "@/stores/auth";
 
 export default function SettingsPage() {
@@ -78,10 +79,10 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold">个人设置</h2>
-        <p className="text-muted mt-1">对接 Legacy `index/editPersonal` 与 `editPassword`</p>
-      </div>
+      <PageHeader
+        description="对接 Legacy `index/editPersonal` 与 `editPassword`"
+        title="个人设置"
+      />
 
       {message ? (
         <Alert status="success">

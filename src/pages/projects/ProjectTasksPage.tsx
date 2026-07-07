@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
 import {
   Button,
   InputGroup,
@@ -12,13 +11,16 @@ import {
 
 import { KanbanBoard } from "@/components/kanban-board";
 import { TaskDetailDrawer } from "@/components/task-detail-drawer";
+import { PageHeader } from "@/components/typography";
+import { useProjectRoute } from "@/contexts/project-context";
 import * as taskStagesApi from "@/api/taskStages";
 import * as taskApi from "@/api/task";
 import { fetchTaskStages } from "@/api/task";
 import type { TaskItem, TaskStage } from "@/types/api";
 
 export default function ProjectTasksPage() {
-  const { code: projectCode = "" } = useParams<{ code: string }>();
+  const { apiCode, pathId } = useProjectRoute();
+  const projectCode = apiCode || pathId;
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedTask, setSelectedTask] = useState<TaskItem | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
@@ -76,15 +78,18 @@ export default function ProjectTasksPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">任务看板</h2>
-        <div className="flex gap-2">
-          <Button variant="secondary" onPress={() => setStageOpen(true)}>
-            新建列
-          </Button>
-          <Button onPress={openCreate}>创建任务</Button>
-        </div>
-      </div>
+      <PageHeader
+        actions={
+          <>
+            <Button variant="secondary" onPress={() => setStageOpen(true)}>
+              新建列
+            </Button>
+            <Button onPress={openCreate}>创建任务</Button>
+          </>
+        }
+        size="medium"
+        title="任务看板"
+      />
 
       {createError && !createOpen ? (
         <p className="text-sm text-danger">{createError}</p>

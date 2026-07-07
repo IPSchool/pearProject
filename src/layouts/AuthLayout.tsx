@@ -11,11 +11,11 @@ export default function AuthLayout() {
         <div className="flex items-center gap-3">
           <PearLogo size={40} />
           <div>
-            <p className="text-2xl font-bold">{siteConfig.name}</p>
-            <p className="text-muted">{siteConfig.description}</p>
+            <p className="type-heading-large">{siteConfig.name}</p>
+            <p className="type-meta">{siteConfig.description}</p>
           </div>
         </div>
-        <p className="max-w-md text-sm text-muted leading-relaxed">
+        <p className="max-w-md type-body text-subtle leading-relaxed">
           Hero 分支使用 React 19 + HeroUI v3 从零重建。Vue 2 原型见{" "}
           <code className="rounded bg-background/60 px-1">HistoryV</code> 分支，产品设计见
           pearProjectDocs。
@@ -30,10 +30,10 @@ export default function AuthLayout() {
           <div className="w-full max-w-md">
             <div className="mb-8 flex items-center gap-2 lg:hidden">
               <PearLogo />
-              <p className="text-xl font-bold">{siteConfig.name}</p>
+              <p className="type-heading-medium">{siteConfig.name}</p>
             </div>
             <Outlet />
-            <p className="mt-8 text-center text-xs text-muted">
+            <p className="mt-8 text-center type-hint">
               <Link className="text-accent hover:underline" to="/member/login">
                 登录
               </Link>

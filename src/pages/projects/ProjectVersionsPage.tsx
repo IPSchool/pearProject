@@ -17,6 +17,7 @@ import * as featuresApi from "@/api/features";
 import type { ProjectFeature } from "@/api/features";
 import * as versionApi from "@/api/version";
 import type { ProjectVersion } from "@/api/version";
+import { PageHeader } from "@/components/typography";
 
 export default function ProjectVersionsPage() {
   const { code: projectCode = "" } = useParams<{ code: string }>();
@@ -107,17 +108,20 @@ export default function ProjectVersionsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold">版本规划</h2>
-        <div className="flex gap-2">
-          <Button variant="secondary" onPress={() => setFeatureOpen(true)}>
-            新建版本库
-          </Button>
-          <Button isDisabled={!selectedFeature} onPress={() => setVersionOpen(true)}>
-            新建版本
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        actions={
+          <>
+            <Button variant="secondary" onPress={() => setFeatureOpen(true)}>
+              新建版本库
+            </Button>
+            <Button isDisabled={!selectedFeature} onPress={() => setVersionOpen(true)}>
+              新建版本
+            </Button>
+          </>
+        }
+        size="medium"
+        title="版本规划"
+      />
 
       {features.length ? (
         <Select

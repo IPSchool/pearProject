@@ -49,6 +49,7 @@ export interface LoginResult {
 }
 
 export interface ProjectSummary {
+  id?: number;
   code: string;
   name: string;
   description?: string;
@@ -63,6 +64,10 @@ export interface ProjectDetail extends ProjectSummary {
   owner_avatar?: string;
   organization_code?: string;
   create_time?: string;
+  /** Jira Project Key 前缀，如 KAN */
+  prefix?: string;
+  /** 是否启用 Issue Key（prefix-id_num） */
+  open_prefix?: number | boolean;
 }
 
 export interface TaskStage {
@@ -77,12 +82,44 @@ export interface TaskItem {
   name: string;
   stage_code?: string;
   project_code?: string;
+  project_id?: number;
+  projectInfo?: { id?: number; code: string; name: string } | null;
+  projectName?: string;
+  stageName?: string;
+  pri?: number;
   priText?: string;
+  status?: number;
   statusText?: string;
   done?: number;
   description?: string;
+  begin_time?: string;
   end_time?: string;
   assign_to?: string;
+  create_by?: string;
+  create_time?: string;
+  id_num?: number;
+  /** Jira 风格 Issue Key，如 KAN-1 */
+  issueKey?: string;
+  creator?: { name?: string; avatar?: string; code?: string } | null;
+  executor?: { name?: string; avatar?: string; code?: string } | null;
+  /** 父任务 code；空字符串表示顶层任务 */
+  pcode?: string;
+  parentTask?: TaskParentRef | null;
+  /** 从根到直接父级的面包屑 */
+  parentTasks?: TaskParentRef[];
+  /** [子任务总数, 已完成数] */
+  childCount?: [number, number];
+  hasUnDone?: number;
+  parentDone?: number;
+}
+
+export interface TaskParentRef {
+  code: string;
+  name?: string;
+  id_num?: number;
+  issueKey?: string;
+  project_id?: number;
+  project_code?: string;
 }
 
 export interface RegisterPayload {
@@ -94,14 +131,26 @@ export interface RegisterPayload {
   captcha: string;
 }
 
+export interface TaskLogReaction {
+  reaction: string;
+  count: number;
+  reacted: boolean;
+}
+
 export interface TaskLogItem {
   id: number;
+  code?: string;
   content: string;
   remark?: string;
   is_comment?: number;
   create_time: string;
+  member_code?: string;
   member_name?: string;
   member_avatar?: string;
+  member?: { name?: string; avatar?: string; code?: string };
+  type?: string;
+  icon?: string;
+  reactions?: TaskLogReaction[];
 }
 
 export interface TaskWorkTimeItem {
