@@ -9,7 +9,10 @@ export type WsStatus = "idle" | "connecting" | "open" | "closed" | "error";
 
 export interface WsMessage {
   action?: string;
+  msg?: string;
+  title?: string;
   data?: unknown;
+  uid?: number;
 }
 
 export function parseWsMessage(raw: string): WsMessage | null {

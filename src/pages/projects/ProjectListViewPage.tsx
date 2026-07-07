@@ -4,13 +4,21 @@ import { Button, Card, InputGroup, Spinner, TextField } from "@heroui/react";
 import { fetchProjectMembers } from "@/api/member";
 import { createTask } from "@/api/task";
 import { ListColumnSettings } from "@/components/project/list-column-settings";
+import { TaskListFiltersPanel } from "@/components/project/task-list-filters-panel";
 import { listColumnHeader, TaskListRow } from "@/components/project/task-list-row";
+import {
+  applyTaskListFilters,
+  DEFAULT_TASK_LIST_FILTERS,
+  sortTaskList,
+  type TaskListFilters,
+} from "@/lib/task-list-filters";
 import {
   loadVisibleColumns,
   type ListColumnKey,
   LIST_COLUMNS,
 } from "@/lib/list-view-columns";
 import { useProjectRoute } from "@/contexts/project-context";
+import { useRealtimeProjectRefresh } from "@/hooks/use-realtime-project-refresh";
 import { useProjectTasks } from "@/hooks/use-project-tasks";
 import type { ProjectMember } from "@/types/api";
 
@@ -18,6 +26,7 @@ export default function ProjectListViewPage() {
   const { apiCode, pathId, projectId } = useProjectRoute();
   const projectCode = apiCode || pathId;
   const { tasks, stages, loading, error, reload } = useProjectTasks(projectCode);
+  useRealtimeProjectRefresh(projectCode, reload);
   const [keyword, setKeyword] = useState("");
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
@@ -26,6 +35,7 @@ export default function ProjectListViewPage() {
   const [visibleColumns, setVisibleColumns] = useState<ListColumnKey[]>(() =>
     loadVisibleColumns(projectCode),
   );
+  const [listFilters, setListFilters] = useState<TaskListFilters>(DEFAULT_TASK_LIST_FILTERS);
 
   useEffect(() => {
     setVisibleColumns(loadVisibleColumns(projectCode));
@@ -46,15 +56,19 @@ export default function ProjectListViewPage() {
 
   const filtered = useMemo(() => {
     const q = keyword.trim().toLowerCase();
-    if (!q) return tasks;
-    return tasks.filter(
-      (t) =>
-        t.name.toLowerCase().includes(q) ||
-        t.code.toLowerCase().includes(q) ||
-        (t.executor?.name ?? "").toLowerCase().includes(q) ||
-        (t.creator?.name ?? "").toLowerCase().includes(q),
-    );
-  }, [tasks, keyword]);
+    let list = tasks;
+    if (q) {
+      list = list.filter(
+        (t) =>
+          t.name.toLowerCase().includes(q) ||
+          t.code.toLowerCase().includes(q) ||
+          (t.executor?.name ?? "").toLowerCase().includes(q) ||
+          (t.creator?.name ?? "").toLowerCase().includes(q),
+      );
+    }
+    list = applyTaskListFilters(list, listFilters);
+    return sortTaskList(list, listFilters.sort);
+  }, [tasks, keyword, listFilters]);
 
   const visibleDefs = LIST_COLUMNS.filter((c) => visibleColumns.includes(c.key));
 
@@ -102,6 +116,13 @@ export default function ProjectListViewPage() {
       </div>
 
       {error ? <Card className="p-4 text-danger">{error}</Card> : null}
+
+      <TaskListFiltersPanel
+        filters={listFilters}
+        resultCount={filtered.length}
+        totalCount={tasks.length}
+        onChange={setListFilters}
+      />
 
       <div className="overflow-x-auto rounded-lg border border-separator">
         <table className="min-w-full text-left">

@@ -1,8 +1,11 @@
-# PearProject Hero
+# PearProject
 
-梨子项目管理系统 — **React + HeroUI** 前端重建（`Hero` 分支）。
+梨子项目管理系统 — 开源团队协作与项目管理 Web 应用。
 
-> Vue 2 原型见 `HistoryV` 分支。完整说明见 [HERO.md](./HERO.md)。
+Hero 分支为正式 Web 客户端：Jira 式项目空间、看板与列表、Wiki、团队权限与数据分析。本地开发需配合 [pearProjectApi](https://github.com/a54552239/pearProjectApi)（Docker 8090）。
+
+- [HERO.md](./HERO.md) — 功能清单与开发说明
+- [pearProjectDocs](https://github.com/a54552239/pearProjectDocs) — 产品设计文档
 
 ## 快速开始
 
@@ -12,7 +15,7 @@ cp .env.example .env
 npm run dev
 ```
 
-默认连接本地 API（需 pearProjectApi `docker/jira` 8090）：
+启动后端（8090）：
 
 ```bash
 cd ../pearProjectApi/docker/jira && docker compose up -d
@@ -27,8 +30,3 @@ cd ../pearProjectApi/docker/jira && docker compose up -d
 | `npm run dev` | 开发服务器 http://127.0.0.1:5173 |
 | `npm run build` | 生产构建 |
 | `npm run preview` | 预览构建产物 |
-
-## 文档
-
-- [HERO.md](./HERO.md) — 架构与路线图
-- [pearProjectDocs](https://github.com/a54552239/pearProjectDocs) — 产品设计

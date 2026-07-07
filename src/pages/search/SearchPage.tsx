@@ -55,7 +55,7 @@ export default function SearchPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader description="Legacy `task/index` + keyword" title="任务搜索" />
+      <PageHeader description="按关键词与项目筛选，快速定位工作项" title="任务搜索" />
 
       <Card className="p-4">
         <div className="flex flex-wrap items-center gap-3">

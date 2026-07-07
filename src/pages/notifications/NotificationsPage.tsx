@@ -3,9 +3,11 @@ import { Button, Card, Chip, Spinner } from "@heroui/react";
 
 import * as notifyApi from "@/api/notify";
 import { PageHeader } from "@/components/typography";
+import { useRealtimeStore } from "@/stores/realtime";
 import type { NotificationItem } from "@/types/api";
 
 export default function NotificationsPage() {
+  const notifyTick = useRealtimeStore((s) => s.notifyTick);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [noReads, setNoReads] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -29,22 +31,39 @@ export default function NotificationsPage() {
   }
 
   useEffect(() => {
-    load();
-  }, []);
+    void load();
+  }, [notifyTick]);
 
   async function markRead(id: number) {
-    await notifyApi.markNotificationRead(id);
-    await load();
+    setError(null);
+    setItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, is_read: 1 } : item)),
+    );
+    setNoReads((count) => Math.max(0, count - 1));
+    try {
+      await notifyApi.markNotificationRead(id);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "标记已读失败");
+      await load();
+    }
   }
 
   async function remove(id: number) {
-    await notifyApi.deleteNotification(id);
-    await load();
+    try {
+      await notifyApi.deleteNotification(id);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "删除失败");
+    }
   }
 
   async function clearAll() {
-    await notifyApi.clearAllNotifications();
-    await load();
+    try {
+      await notifyApi.clearAllNotifications();
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "清空失败");
+    }
   }
 
   return (

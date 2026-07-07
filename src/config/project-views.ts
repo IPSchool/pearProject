@@ -39,9 +39,9 @@ export const PRIMARY_PROJECT_VIEWS: ProjectViewTab[] = [
   { key: "calendar", label: "日历", suffix: "/calendar", icon: CalendarIcon },
   { key: "timeline", label: "时间线", suffix: "/timeline", icon: ChartIcon },
   { key: "wiki", label: "文档", suffix: "/wiki", icon: TemplateIcon },
-  { key: "forms", label: "表单", suffix: "/forms", icon: FolderIcon },
+  { key: "surveys", label: "调查问卷", suffix: "/surveys", icon: FolderIcon },
   { key: "backlog", label: "待办事项", suffix: "/backlog", icon: ArchiveIcon },
-  { key: "versions", label: "版本", suffix: "/versions", icon: VersionIcon },
+  { key: "versions", label: "里程碑", suffix: "/milestones", icon: VersionIcon },
 ];
 
 /** 次要视图（仍保留 Legacy 能力） */
@@ -62,6 +62,12 @@ export function isProjectViewActive(
   const href = `${base}${tab.suffix}`;
   if (tab.key === "wiki") {
     return pathname.startsWith(`${base}/wiki`);
+  }
+  if (tab.key === "surveys") {
+    return pathname.startsWith(`${base}/surveys`) || pathname.startsWith(`${base}/forms`);
+  }
+  if (tab.key === "versions") {
+    return pathname.startsWith(`${base}/milestones`) || pathname.startsWith(`${base}/versions`);
   }
   return pathname === href || pathname.startsWith(`${href}/`);
 }

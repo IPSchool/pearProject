@@ -15,7 +15,7 @@ import SearchPage from "@/pages/search/SearchPage";
 import NotificationsPage from "@/pages/notifications/NotificationsPage";
 import ProjectBacklogPage from "@/pages/projects/ProjectBacklogPage";
 import ProjectCalendarPage from "@/pages/projects/ProjectCalendarPage";
-import ProjectFormsPage from "@/pages/projects/ProjectFormsPage";
+import ProjectSurveysPage from "@/pages/projects/ProjectSurveysPage";
 import ProjectListViewPage from "@/pages/projects/ProjectListViewPage";
 import ProjectTimelinePage from "@/pages/projects/ProjectTimelinePage";
 import ProjectWikiEditorPage from "@/pages/projects/ProjectWikiEditorPage";
@@ -24,7 +24,8 @@ import ProjectFilesPage from "@/pages/projects/ProjectFilesPage";
 import ProjectListPage from "@/pages/projects/ProjectListPage";
 import ProjectMembersPage from "@/pages/projects/ProjectMembersPage";
 import ProjectTasksPage from "@/pages/projects/ProjectTasksPage";
-import ProjectVersionsPage from "@/pages/projects/ProjectVersionsPage";
+import ProjectMilestoneDetailPage from "@/pages/projects/ProjectMilestoneDetailPage";
+import ProjectMilestonesPage from "@/pages/projects/ProjectMilestonesPage";
 import ProjectOverviewPage from "@/pages/projects/ProjectOverviewPage";
 import ProjectTagsPage from "@/pages/projects/ProjectTagsPage";
 import ProjectSettingsPage from "@/pages/projects/ProjectSettingsPage";
@@ -33,6 +34,12 @@ import MyTasksPage from "@/pages/tasks/MyTasksPage";
 import TaskDetailPage from "@/pages/tasks/TaskDetailPage";
 import BrowseIssuePage from "@/pages/tasks/BrowseIssuePage";
 import SettingsPage from "@/pages/settings/SettingsPage";
+import AdminLayout from "@/layouts/AdminLayout";
+import AdminLlmPage from "@/pages/admin/AdminLlmPage";
+import AdminMailPage from "@/pages/admin/AdminMailPage";
+import AdminOrganizationPage from "@/pages/admin/AdminOrganizationPage";
+import AdminSitePage from "@/pages/admin/AdminSitePage";
+import AdminStoragePage from "@/pages/admin/AdminStoragePage";
 import TeamAccountsPage from "@/pages/team/TeamAccountsPage";
 import TeamMembersPage from "@/pages/team/TeamMembersPage";
 import TeamMemberProfilePage from "@/pages/team/TeamMemberProfilePage";
@@ -41,7 +48,7 @@ import TeamRoleApplyPage from "@/pages/team/TeamRoleApplyPage";
 import TeamRolesPage from "@/pages/team/TeamRolesPage";
 import TemplateListPage from "@/pages/templates/TemplateListPage";
 import WorkbenchPage from "@/pages/workbench/WorkbenchPage";
-import { GuestRoute, ProtectedRoute } from "@/routes/guards";
+import { GuestRoute, OwnerRoute, ProtectedRoute } from "@/routes/guards";
 
 function App() {
   return (
@@ -69,6 +76,16 @@ function App() {
           <Route element={<TemplateListPage />} path="/templates" />
           <Route element={<NotificationsPage />} path="/notifications" />
           <Route element={<SettingsPage />} path="/settings" />
+          <Route element={<OwnerRoute />}>
+            <Route element={<AdminLayout />} path="/admin">
+              <Route element={<AdminSitePage />} path="site" />
+              <Route element={<AdminOrganizationPage />} path="organization" />
+              <Route element={<AdminStoragePage />} path="storage" />
+              <Route element={<AdminMailPage />} path="mail" />
+              <Route element={<AdminLlmPage />} path="llm" />
+              <Route element={<Navigate replace to="site" />} index />
+            </Route>
+          </Route>
           <Route element={<TeamLayout />} path="/team">
             <Route element={<TeamOrganizationsPage />} path="organizations" />
             <Route element={<TeamMembersPage />} path="members" />
@@ -88,9 +105,12 @@ function App() {
             <Route element={<ProjectTimelinePage />} path="timeline" />
             <Route element={<ProjectWikiPage />} path="wiki" />
             <Route element={<ProjectWikiEditorPage />} path="wiki/:pageCode" />
-            <Route element={<ProjectFormsPage />} path="forms" />
+            <Route element={<ProjectSurveysPage />} path="surveys" />
+            <Route element={<Navigate replace to="surveys" />} path="forms" />
             <Route element={<ProjectBacklogPage />} path="backlog" />
-            <Route element={<ProjectVersionsPage />} path="versions" />
+            <Route element={<ProjectMilestonesPage />} path="milestones" />
+            <Route element={<ProjectMilestoneDetailPage />} path="milestones/:milestoneCode" />
+            <Route element={<Navigate replace to="milestones" />} path="versions" />
             <Route element={<ProjectMembersPage />} path="members" />
             <Route element={<ProjectFilesPage />} path="files" />
             <Route element={<ProjectTagsPage />} path="tags" />

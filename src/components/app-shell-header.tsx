@@ -72,7 +72,7 @@ export function AppShellHeader() {
           </ShellIconButton>
         ) : null}
 
-        {focusMode || sidebarCollapsed ? (
+        {focusMode ? (
           <Link
             aria-label={siteConfig.name}
             className="hidden items-center gap-2 rounded-md px-1.5 py-1 hover:bg-[var(--ads-color-background-neutral)] sm:flex"

@@ -80,7 +80,7 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <PageHeader
-        description="对接 Legacy `index/editPersonal` 与 `editPassword`"
+        description="修改头像、昵称与登录密码"
         title="个人设置"
       />
 

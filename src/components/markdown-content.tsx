@@ -1,6 +1,8 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+import { stripLegacyHtmlImages } from "@/config/assets";
+
 /** 判断是否为旧版富文本 HTML 描述 */
 export function isHtmlDescription(source: string | null | undefined): boolean {
   if (!source?.trim()) return false;
@@ -24,7 +26,7 @@ export function MarkdownContent({ source, emptyHint, className }: MarkdownConten
     return (
       <div
         className={`markdown-prose markdown-prose--html ${className ?? ""}`}
-        dangerouslySetInnerHTML={{ __html: source }}
+        dangerouslySetInnerHTML={{ __html: stripLegacyHtmlImages(source) }}
       />
     );
   }

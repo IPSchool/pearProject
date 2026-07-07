@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Button,
   InputGroup,
@@ -13,6 +13,7 @@ import { KanbanBoard } from "@/components/kanban-board";
 import { TaskDetailDrawer } from "@/components/task-detail-drawer";
 import { PageHeader } from "@/components/typography";
 import { useProjectRoute } from "@/contexts/project-context";
+import { useRealtimeProjectRefresh } from "@/hooks/use-realtime-project-refresh";
 import * as taskStagesApi from "@/api/taskStages";
 import * as taskApi from "@/api/task";
 import { fetchTaskStages } from "@/api/task";
@@ -32,6 +33,9 @@ export default function ProjectTasksPage() {
   const [stageOpen, setStageOpen] = useState(false);
   const [stageName, setStageName] = useState("");
   const [stageSaving, setStageSaving] = useState(false);
+
+  const bumpRefresh = useCallback(() => setRefreshKey((k) => k + 1), []);
+  useRealtimeProjectRefresh(projectCode, bumpRefresh);
 
   async function openCreate() {
     setCreateError(null);

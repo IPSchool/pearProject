@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { fetchProjectTasks, fetchTaskStages } from "@/api/task";
 import type { TaskItem, TaskStage } from "@/types/api";
 
-export function useProjectTasks(projectCode: string) {
+export function useProjectTasks(projectCode: string, memberCode = "") {
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [stages, setStages] = useState<TaskStage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -16,7 +16,7 @@ export function useProjectTasks(projectCode: string) {
     try {
       const [stageList, taskData] = await Promise.all([
         fetchTaskStages(projectCode),
-        fetchProjectTasks(projectCode, 1, 500),
+        fetchProjectTasks(projectCode, 1, 500, memberCode || undefined),
       ]);
       setStages(stageList);
       setTasks(taskData.list ?? []);
@@ -27,7 +27,7 @@ export function useProjectTasks(projectCode: string) {
     } finally {
       setLoading(false);
     }
-  }, [projectCode]);
+  }, [projectCode, memberCode]);
 
   useEffect(() => {
     reload();

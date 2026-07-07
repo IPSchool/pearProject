@@ -146,7 +146,7 @@ export default function TeamAccountsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted">共 {total} 个账户 · 系统账号管理（Legacy account）</p>
+        <p className="text-sm text-muted">共 {total} 个账户 · 管理后台登录账号与角色授权</p>
         <Button onPress={openCreate}>添加账户</Button>
       </div>
       {error ? <p className="text-danger text-sm">{error}</p> : null}

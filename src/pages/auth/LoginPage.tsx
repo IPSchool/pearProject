@@ -44,7 +44,7 @@ export default function LoginPage() {
     <Card className="p-6 shadow-surface">
       <Card.Header className="flex flex-col items-start gap-1 pb-0">
         <Card.Title className="type-heading-large">登录</Card.Title>
-        <Card.Description>连接 pearProjectApi Legacy 接口</Card.Description>
+        <Card.Description>登录后进入工作台，查看项目动态与待办任务</Card.Description>
       </Card.Header>
       <Card.Content className="pt-6">
         <form className="space-y-4" onSubmit={onSubmit}>

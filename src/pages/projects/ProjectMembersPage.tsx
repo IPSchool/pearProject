@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Button,
   Card,
@@ -14,33 +13,51 @@ import * as memberApi from "@/api/member";
 import type { ProjectMember } from "@/types/api";
 import { MemberAvatar } from "@/components/member-avatar";
 import { PageHeader } from "@/components/typography";
+import { useProjectRoute } from "@/contexts/project-context";
+
+function buildInviteUrl(inviteCode: string) {
+  if (typeof window === "undefined") return `/invite/${inviteCode}`;
+  return `${window.location.origin}/invite/${inviteCode}`;
+}
 
 export default function ProjectMembersPage() {
-  const { code: projectCode = "" } = useParams<{ code: string }>();
+  const { apiCode, projectRef } = useProjectRoute();
+  const projectCode = apiCode || projectRef;
   const [members, setMembers] = useState<ProjectMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState("");
   const [searchResults, setSearchResults] = useState<ProjectMember[]>([]);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [inviting, setInviting] = useState(false);
   const [acting, setActing] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
 
-  async function loadMembers() {
+  const inviteUrl = useMemo(
+    () => (inviteCode ? buildInviteUrl(inviteCode) : ""),
+    [inviteCode],
+  );
+
+  const loadMembers = useCallback(async () => {
+    if (!projectCode) return;
     const d = await memberApi.fetchProjectMembers(projectCode);
     setMembers(d.list ?? []);
-  }
+  }, [projectCode]);
 
   useEffect(() => {
+    if (!projectCode) return;
+    setLoading(true);
     loadMembers()
       .catch((e) => setError(e instanceof Error ? e.message : "加载失败"))
       .finally(() => setLoading(false));
-  }, [projectCode]);
+  }, [projectCode, loadMembers]);
 
   async function onSearch(value: string) {
     setKeyword(value);
-    if (!value.trim()) {
+    if (!value.trim() || !projectCode) {
       setSearchResults([]);
       return;
     }
@@ -56,8 +73,10 @@ export default function ProjectMembersPage() {
   }
 
   async function handleCreateInvite() {
+    if (!projectCode) return;
     setInviting(true);
     setError(null);
+    setMessage(null);
     try {
       const link = await inviteApi.createProjectInviteLink(projectCode);
       setInviteCode(link.code);
@@ -68,12 +87,44 @@ export default function ProjectMembersPage() {
     }
   }
 
+  async function handleCopyInviteUrl() {
+    if (!inviteUrl) return;
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setMessage("邀请链接已复制");
+    } catch {
+      setMessage("请手动复制下方链接");
+    }
+  }
+
+  async function handleSendInviteEmail(e: React.FormEvent) {
+    e.preventDefault();
+    if (!projectCode || !inviteEmail.trim()) return;
+    setSendingEmail(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const data = await memberApi.sendInviteEmail(projectCode, inviteEmail.trim());
+      if (data.inviteUrl) {
+        setInviteCode(data.inviteUrl.split("/invite/").pop() ?? null);
+      }
+      setMessage("邀请邮件已发送");
+      setInviteEmail("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "发送邀请邮件失败");
+    } finally {
+      setSendingEmail(false);
+    }
+  }
+
   async function handleInvite(memberCode: string) {
+    if (!projectCode) return;
     setActing(memberCode);
     try {
       await memberApi.inviteMember(projectCode, memberCode);
       await loadMembers();
       setSearchResults((prev) => prev.filter((m) => m.code !== memberCode));
+      setMessage("已邀请该成员");
     } catch (e) {
       setError(e instanceof Error ? e.message : "邀请失败");
     } finally {
@@ -82,6 +133,7 @@ export default function ProjectMembersPage() {
   }
 
   async function handleRemove(memberCode: string) {
+    if (!projectCode) return;
     setActing(memberCode);
     try {
       await memberApi.removeMember(projectCode, memberCode);
@@ -112,18 +164,46 @@ export default function ProjectMembersPage() {
         size="medium"
         title="项目成员"
       />
+
       {inviteCode ? (
-        <Card className="p-4 bg-accent/5">
-          <p className="text-sm font-medium">邀请码</p>
-          <p className="font-mono text-sm mt-1 break-all">{inviteCode}</p>
-          <p className="text-xs text-muted mt-2">
-            落地页：{" "}
-            <a className="text-accent hover:underline" href={`/invite/${inviteCode}`}>
-              /invite/{inviteCode}
+        <Card className="p-4 bg-accent/5 space-y-2">
+          <p className="text-sm font-medium">邀请链接</p>
+          <p className="font-mono text-sm break-all">{inviteUrl}</p>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="secondary" onPress={handleCopyInviteUrl}>
+              复制链接
+            </Button>
+            <a className="text-sm text-accent hover:underline self-center" href={inviteUrl}>
+              打开落地页
             </a>
-          </p>
+          </div>
+          <p className="text-xs text-muted">链接 24 小时内有效，接受邀请需注册/登录账号。</p>
         </Card>
       ) : null}
+
+      <Card className="p-4 space-y-3">
+        <p className="font-medium">邮件邀请外部成员</p>
+        <p className="text-sm text-muted">
+          向未在组织内的邮箱发送邀请信（需管理员在系统设置中配置 SMTP）。
+        </p>
+        <form className="flex flex-col gap-3 sm:flex-row sm:items-end" onSubmit={handleSendInviteEmail}>
+          <TextField className="flex-1" name="inviteEmail">
+            <InputGroup>
+              <InputGroup.Input
+                placeholder="外部成员邮箱"
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+              />
+            </InputGroup>
+          </TextField>
+          <Button isPending={sendingEmail} size="sm" type="submit">
+            发送邀请邮件
+          </Button>
+        </form>
+      </Card>
+
+      {message ? <p className="text-success text-sm">{message}</p> : null}
       {error ? <p className="text-danger text-sm">{error}</p> : null}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": path.resolve(rootDir, "src"),
+        "@home": path.resolve(rootDir, "src/assets/home"),
       },
       tsconfigPaths: true,
     },
@@ -25,6 +26,10 @@ export default defineConfig(({ mode }) => {
           target: apiTarget,
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ""),
+        },
+        "/static/upload": {
+          target: apiTarget,
+          changeOrigin: true,
         },
       },
     },

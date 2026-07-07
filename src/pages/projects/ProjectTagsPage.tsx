@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import { Button, Card, Chip, InputGroup, Label, Modal, Spinner, TextField } from "@heroui/react";
 
 import * as taskTagApi from "@/api/taskTag";
+import { useProjectRoute } from "@/contexts/project-context";
 import { PageHeader } from "@/components/typography";
 import type { TaskTagItem } from "@/types/api";
 
 export default function ProjectTagsPage() {
-  const { code: projectCode = "" } = useParams<{ code: string }>();
+  const { apiCode, pathId } = useProjectRoute();
+  const projectCode = apiCode || pathId;
   const [tags, setTags] = useState<TaskTagItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);

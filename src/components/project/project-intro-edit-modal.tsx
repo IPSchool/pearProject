@@ -3,7 +3,7 @@ import { Button, Label, Modal } from "@heroui/react";
 
 import { editProjectFields, uploadProjectCover } from "@/api/project";
 import * as projectInfoApi from "@/api/projectInfo";
-import { MarkdownContent } from "@/components/markdown-content";
+import { MarkdownEditor } from "@/components/markdown-editor";
 import { ProjectCoverImage } from "@/components/project-cover-image";
 import {
   DEFAULT_OVERVIEW_SETTINGS,
@@ -142,23 +142,14 @@ export function ProjectIntroEditModal({
             <div>
               <Label>项目介绍（Markdown）</Label>
               <p className="type-hint mb-2 text-subtlest">
-                左侧编辑、右侧实时预览；支持 emoji、列表、链接等。
+                GitHub 风格编辑器：写入 / 预览切换，工具栏支持标题、粗体、列表与缩进等。
               </p>
-              <div className="grid min-h-[14rem] gap-3 lg:grid-cols-2">
-                <textarea
-                  className="block min-h-[14rem] w-full resize-y rounded-lg border border-separator bg-surface px-3 py-2 font-mono text-[0.8125rem] leading-relaxed outline-none focus:border-[var(--ads-color-brand)]"
-                  placeholder="- 项目目标&#10;- 里程碑&#10;&#10;支持 **Markdown** 与 emoji 📝"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-                <div className="min-h-[14rem] overflow-auto rounded-lg border border-separator bg-surface-sunken px-4 py-3">
-                  {description.trim() ? (
-                    <MarkdownContent source={description} />
-                  ) : (
-                    <p className="type-hint text-subtlest">预览区域</p>
-                  )}
-                </div>
-              </div>
+              <MarkdownEditor
+                minHeight="14rem"
+                placeholder="- 项目目标&#10;- 里程碑&#10;&#10;支持 **Markdown** 与 emoji 📝"
+                value={description}
+                onChange={setDescription}
+              />
             </div>
 
             {error ? <p className="type-body text-danger">{error}</p> : null}

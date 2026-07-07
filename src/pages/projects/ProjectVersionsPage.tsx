@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import {
   Button,
   Card,
@@ -17,10 +16,12 @@ import * as featuresApi from "@/api/features";
 import type { ProjectFeature } from "@/api/features";
 import * as versionApi from "@/api/version";
 import type { ProjectVersion } from "@/api/version";
+import { useProjectRoute } from "@/contexts/project-context";
 import { PageHeader } from "@/components/typography";
 
 export default function ProjectVersionsPage() {
-  const { code: projectCode = "" } = useParams<{ code: string }>();
+  const { apiCode, pathId } = useProjectRoute();
+  const projectCode = apiCode || pathId;
   const [features, setFeatures] = useState<ProjectFeature[]>([]);
   const [selectedFeature, setSelectedFeature] = useState("");
   const [versions, setVersions] = useState<ProjectVersion[]>([]);

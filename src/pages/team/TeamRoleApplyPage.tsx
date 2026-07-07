@@ -11,7 +11,7 @@ export default function TeamRoleApplyPage() {
         ← 返回角色列表
       </Link>
       <h3 className="text-lg font-medium">权限节点授权</h3>
-      <p className="text-sm text-muted">勾选该角色可访问的 Legacy API 节点（auth/apply）</p>
+      <p className="text-sm text-muted">勾选该角色可使用的功能菜单与操作权限</p>
       {id ? <AuthPermissionTree roleId={id} /> : null}
     </div>
   );

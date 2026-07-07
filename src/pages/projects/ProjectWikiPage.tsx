@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Button,
   Card,
@@ -12,11 +12,15 @@ import {
 
 import * as projectInfoApi from "@/api/projectInfo";
 import { MarkdownContent } from "@/components/markdown-content";
+import { PageHeader } from "@/components/typography";
+import { useProjectRoute } from "@/contexts/project-context";
 import { INFO_TYPE_WIKI } from "@/lib/project-info-types";
 import type { ProjectInfoBlock } from "@/types/api";
 
 export default function ProjectWikiPage() {
-  const { code: projectCode = "" } = useParams<{ code: string }>();
+  const { apiCode, pathId } = useProjectRoute();
+  const projectCode = apiCode || pathId;
+  const projectPathId = pathId;
   const navigate = useNavigate();
   const [pages, setPages] = useState<ProjectInfoBlock[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +58,7 @@ export default function ProjectWikiPage() {
       setOpen(false);
       setTitle("");
       if (created?.code) {
-        navigate(`/project/${projectCode}/wiki/${created.code}`);
+        navigate(`/project/${projectPathId}/wiki/${created.code}`);
       } else {
         await load();
       }
@@ -75,19 +79,18 @@ export default function ProjectWikiPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="type-heading-small">项目文档</h2>
-          <p className="type-meta mt-1">Wiki 页面，支持 Markdown 格式（基于 projectInfo）</p>
-        </div>
-        <Button onPress={() => setOpen(true)}>新建页面</Button>
-      </div>
+      <PageHeader
+        actions={<Button onPress={() => setOpen(true)}>新建页面</Button>}
+        description="项目知识库：创建 PRD、设计说明等 Wiki 页面，支持 Markdown 编写与预览。"
+        size="medium"
+        title="项目文档"
+      />
 
       {error ? <Card className="p-4 text-danger">{error}</Card> : null}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {pages.map((page) => (
-          <Link key={page.code} to={`/project/${projectCode}/wiki/${page.code}`}>
+          <Link key={page.code} to={`/project/${projectPathId}/wiki/${page.code}`}>
             <Card className="h-full p-4 hover:shadow-md transition-shadow">
               <p className="type-body font-medium">{page.name}</p>
               <div className="mt-2 line-clamp-4 type-hint">

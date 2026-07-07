@@ -1,26 +1,17 @@
 import { Link, Outlet } from "react-router-dom";
 
+import { AuthHeroAside } from "@/components/auth-hero-aside";
+import { AppSiteBootstrap } from "@/components/app-site-bootstrap";
 import { PearLogo } from "@/components/pear-logo";
 import { ThemeSwitch } from "@/components/theme-switch";
-import { siteConfig } from "@/config/site";
+import { useSitePublicStore } from "@/stores/site-public";
 
 export default function AuthLayout() {
+  const displayName = useSitePublicStore((s) => s.displayName());
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      <section className="hidden lg:flex flex-col justify-between bg-accent/10 p-12">
-        <div className="flex items-center gap-3">
-          <PearLogo size={40} />
-          <div>
-            <p className="type-heading-large">{siteConfig.name}</p>
-            <p className="type-meta">{siteConfig.description}</p>
-          </div>
-        </div>
-        <p className="max-w-md type-body text-subtle leading-relaxed">
-          Hero 分支使用 React 19 + HeroUI v3 从零重建。Vue 2 原型见{" "}
-          <code className="rounded bg-background/60 px-1">HistoryV</code> 分支，产品设计见
-          pearProjectDocs。
-        </p>
-      </section>
+      <AppSiteBootstrap />
+      <AuthHeroAside />
 
       <section className="flex flex-col">
         <div className="flex justify-end p-4">
@@ -30,7 +21,7 @@ export default function AuthLayout() {
           <div className="w-full max-w-md">
             <div className="mb-8 flex items-center gap-2 lg:hidden">
               <PearLogo />
-              <p className="type-heading-medium">{siteConfig.name}</p>
+              <p className="type-heading-medium">{displayName}</p>
             </div>
             <Outlet />
             <p className="mt-8 text-center type-hint">

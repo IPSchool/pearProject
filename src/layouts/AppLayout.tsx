@@ -3,6 +3,9 @@ import clsx from "clsx";
 
 import { AppShellHeader } from "@/components/app-shell-header";
 import { AppSidebar } from "@/components/app-sidebar";
+import { AppFooter } from "@/components/app-footer";
+import { AppRealtimeBootstrap } from "@/components/app-realtime-bootstrap";
+import { AppSiteBootstrap } from "@/components/app-site-bootstrap";
 import { useLayoutStore } from "@/stores/layout";
 
 export default function AppLayout() {
@@ -10,6 +13,8 @@ export default function AppLayout() {
 
   return (
     <div className="flex h-screen bg-surface text-foreground">
+      <AppSiteBootstrap />
+      <AppRealtimeBootstrap />
       {!focusMode ? <AppSidebar /> : null}
       <div className="flex min-w-0 flex-1 flex-col">
         <AppShellHeader />
@@ -21,6 +26,7 @@ export default function AppLayout() {
         >
           <Outlet />
         </main>
+        {!focusMode ? <AppFooter /> : null}
       </div>
     </div>
   );

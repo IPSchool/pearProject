@@ -12,6 +12,7 @@ export interface TokenList {
 }
 
 export interface Member {
+  id?: number;
   code: string;
   name: string;
   avatar?: string;
@@ -22,6 +23,9 @@ export interface Member {
   organization_code?: string;
   position?: string;
   department?: string;
+  /** 当前组织拥有者（1 = 可管理系统级配置） */
+  is_owner?: number;
+  authorize?: number | string;
 }
 
 export interface Organization {
@@ -90,6 +94,8 @@ export interface TaskItem {
   priText?: string;
   status?: number;
   statusText?: string;
+  resolution?: string | null;
+  resolutionText?: string;
   done?: number;
   description?: string;
   begin_time?: string;
@@ -104,6 +110,8 @@ export interface TaskItem {
   executor?: { name?: string; avatar?: string; code?: string } | null;
   /** 父任务 code；空字符串表示顶层任务 */
   pcode?: string;
+  version_code?: string;
+  milestone?: { code: string; name: string; status?: number; plan_publish_time?: string } | null;
   parentTask?: TaskParentRef | null;
   /** 从根到直接父级的面包屑 */
   parentTasks?: TaskParentRef[];

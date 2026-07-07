@@ -19,12 +19,16 @@ export async function fetchNoReads() {
 }
 
 export async function markNotificationRead(notifyId: number) {
-  const res = await post("project/notify/setReadied", { notifyId });
+  const res = await post("project/notify/setReadied", {
+    ids: JSON.stringify([notifyId]),
+  });
   if (!isOk(res)) throw new Error(res.msg || "标记已读失败");
 }
 
 export async function deleteNotification(notifyId: number) {
-  const res = await post("project/notify/delete", { notifyId });
+  const res = await post("project/notify/batchDel", {
+    ids: JSON.stringify([notifyId]),
+  });
   if (!isOk(res)) throw new Error(res.msg || "删除失败");
 }
 

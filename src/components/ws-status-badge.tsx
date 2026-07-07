@@ -1,7 +1,7 @@
-import { Chip } from "@heroui/react";
 import clsx from "clsx";
 
-import { useWebSocket } from "@/hooks/useWebSocket";
+import { wsBaseUrl } from "@/lib/websocket";
+import { useRealtimeStore } from "@/stores/realtime";
 
 const labels: Record<string, string> = {
   idle: "实时未配置",
@@ -20,7 +20,8 @@ const dotClass: Record<string, string> = {
 };
 
 export function WsStatusBadge({ compact = false }: { compact?: boolean }) {
-  const { status, enabled } = useWebSocket();
+  const status = useRealtimeStore((s) => s.wsStatus);
+  const enabled = Boolean(wsBaseUrl());
   const key = enabled ? status : "idle";
   const label = labels[key] ?? status;
 
@@ -38,8 +39,6 @@ export function WsStatusBadge({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <Chip size="sm" variant="tertiary">
-      {label}
-    </Chip>
+    <span className="type-body-small text-subtle">{label}</span>
   );
 }

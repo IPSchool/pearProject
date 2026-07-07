@@ -71,7 +71,7 @@ export default function RegisterPage() {
     <Card className="p-6 shadow-surface">
       <Card.Header className="flex flex-col items-start gap-1 pb-0">
         <Card.Title className="type-heading-large">注册</Card.Title>
-        <Card.Description>对接 Legacy `login/register` + 短信验证码</Card.Description>
+        <Card.Description>创建团队账号，即可创建项目并邀请成员协作</Card.Description>
       </Card.Header>
       <Card.Content className="pt-6">
         <form className="space-y-4" onSubmit={onSubmit}>

@@ -1,20 +1,25 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, Card, InputGroup, Label, Spinner, TextField } from "@heroui/react";
+import { Alert, Button, InputGroup, Label, Spinner, TextField } from "@heroui/react";
 
 import * as projectInfoApi from "@/api/projectInfo";
-import { MarkdownContent } from "@/components/markdown-content";
+import { MarkdownEditor, type MarkdownEditorTab } from "@/components/markdown-editor";
+import { useProjectRoute } from "@/contexts/project-context";
 import { INFO_TYPE_WIKI } from "@/lib/project-info-types";
 
 export default function ProjectWikiEditorPage() {
-  const { code: projectCode = "", pageCode = "" } = useParams<{ code: string; pageCode: string }>();
+  const { apiCode, pathId } = useProjectRoute();
+  const projectCode = apiCode || pathId;
+  const projectPathId = pathId;
+  const { pageCode = "" } = useParams<{ pageCode: string }>();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [preview, setPreview] = useState(false);
+  const [editorTab, setEditorTab] = useState<MarkdownEditorTab>("write");
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -38,8 +43,11 @@ export default function ProjectWikiEditorPage() {
   async function save() {
     setSaving(true);
     setError(null);
+    setMessage(null);
     try {
       await projectInfoApi.editProjectInfoBlock(pageCode, title.trim(), body, INFO_TYPE_WIKI);
+      setEditorTab("preview");
+      setMessage("保存成功，已切换到预览");
     } catch (e) {
       setError(e instanceof Error ? e.message : "保存失败");
     } finally {
@@ -50,7 +58,7 @@ export default function ProjectWikiEditorPage() {
   async function remove() {
     if (!confirm("确定删除此 Wiki 页面？")) return;
     await projectInfoApi.deleteProjectInfoBlock(pageCode);
-    navigate(`/project/${projectCode}/wiki`);
+    navigate(`/project/${projectPathId}/wiki`);
   }
 
   if (loading) {
@@ -65,34 +73,48 @@ export default function ProjectWikiEditorPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <TextField className="max-w-md flex-1" name="title">
-          <Label>标题</Label>
+          <Label>页面标题</Label>
           <InputGroup>
             <InputGroup.Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </InputGroup>
         </TextField>
         <div className="flex gap-2">
-          <Button variant="secondary" onPress={() => setPreview((p) => !p)}>
-            {preview ? "编辑" : "预览"}
+          <Button variant="tertiary" onPress={() => navigate(`/project/${projectPathId}/wiki`)}>
+            返回列表
           </Button>
-          <Button isPending={saving} onPress={save}>保存</Button>
-          <Button variant="tertiary" onPress={remove}>删除</Button>
+          <Button isPending={saving} onPress={save}>
+            保存
+          </Button>
+          <Button variant="tertiary" onPress={remove}>
+            删除
+          </Button>
         </div>
       </div>
 
-      {error ? <Card className="p-4 text-danger">{error}</Card> : null}
+      {message ? (
+        <Alert status="success">
+          <Alert.Indicator />
+          <Alert.Content>{message}</Alert.Content>
+        </Alert>
+      ) : null}
+      {error ? (
+        <Alert status="danger">
+          <Alert.Indicator />
+          <Alert.Content>{error}</Alert.Content>
+        </Alert>
+      ) : null}
 
-      {preview ? (
-        <Card className="p-6 min-h-[20rem]">
-          <MarkdownContent source={body} />
-        </Card>
-      ) : (
-        <textarea
-          className="min-h-[24rem] w-full rounded-lg border border-separator bg-surface p-4 font-mono text-sm leading-relaxed outline-none focus:border-[var(--ads-color-brand)]"
-          placeholder="Markdown 内容…"
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-        />
-      )}
+      <MarkdownEditor
+        minHeight="28rem"
+        placeholder="在此编写 Markdown 文档…"
+        tab={editorTab}
+        value={body}
+        onChange={setBody}
+        onTabChange={(next) => {
+          setEditorTab(next);
+          if (next === "write") setMessage(null);
+        }}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 # Hero 前端验收
 
-对接 pearProjectApi Legacy API（8090），与 UI 实现进度同步扩展。
+# Hero 前端 API 验收（8090），覆盖登录、项目、任务与团队等核心流程。
 
 ## 运行
 

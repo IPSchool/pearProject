@@ -26,12 +26,14 @@ export async function createVersion(
   name: string,
   description = "",
   startTime = "",
+  planPublishTime = "",
 ) {
   const res = await post<{ code: string }>("project/projectVersion/save", {
     featuresCode,
     name,
     description,
     startTime,
+    planPublishTime,
   });
   if (!isOk(res)) throw new Error(res.msg || "创建版本失败");
   return res.data;

@@ -42,7 +42,7 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader description="对接 `project/project/analysis`" title="数据分析" />
+      <PageHeader description="项目完成率、任务分布与趋势概览" title="数据分析" />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="p-4">

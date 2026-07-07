@@ -13,15 +13,26 @@ export function isHeroTypedBlock(description?: string): boolean {
   return Boolean(description?.startsWith(HERO_INFO_PREFIX));
 }
 
+export const INFO_TYPE_SURVEY = INFO_TYPE_FORM;
+export const INFO_TYPE_SURVEY_RESPONSE = INFO_TYPE_FORM_RESPONSE;
+
+export type SurveyFieldType = "text" | "textarea" | "radio" | "yesno";
+
 export interface ProjectFormField {
   id: string;
   label: string;
   required?: boolean;
+  type?: SurveyFieldType;
+  /** radio 选项 */
+  options?: string[];
+  placeholder?: string;
 }
 
 export interface ProjectFormDefinition {
   title: string;
+  /** 问卷用途说明 */
   description?: string;
+  purpose?: "requirement" | "judgment" | "general";
   fields: ProjectFormField[];
 }
 
@@ -30,7 +41,8 @@ export interface ProjectFormResponse {
   formTitle: string;
   answers: Record<string, string>;
   submittedAt: string;
-  taskCode?: string;
+  submitterName?: string;
+  submitterCode?: string;
 }
 
 export function parseFormDefinition(value?: string): ProjectFormDefinition | null {

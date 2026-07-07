@@ -386,6 +386,7 @@ const HREF_ICONS: Array<{ match: (href: string) => boolean; Icon: typeof HomeIco
   { match: (h) => h.startsWith("/analytics"), Icon: ChartIcon },
   { match: (h) => h.startsWith("/templates"), Icon: TemplateIcon },
   { match: (h) => h.startsWith("/team"), Icon: UsersIcon },
+  { match: (h) => h.startsWith("/admin"), Icon: SettingsIcon },
   { match: (h) => h.startsWith("/notifications"), Icon: BellIcon },
   { match: (h) => h.startsWith("/settings"), Icon: SettingsIcon },
 ];

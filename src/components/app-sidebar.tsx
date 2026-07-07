@@ -7,13 +7,21 @@ import { PearLogo } from "@/components/pear-logo";
 import { SidebarQuickAccessSection } from "@/components/sidebar-quick-access-section";
 import { SidebarStarredSection } from "@/components/sidebar-starred-section";
 import { siteConfig } from "@/config/site";
+import { useSitePublicStore } from "@/stores/site-public";
 import { menuToNavRoutes } from "@/lib/menu";
 import { useAuthStore } from "@/stores/auth";
 import { useLayoutStore } from "@/stores/layout";
+import { useIsSystemOwner } from "@/hooks/use-is-system-owner";
 
 export function AppSidebar() {
   const location = useLocation();
   const menuList = useAuthStore((s) => s.menuList);
+  const isSystemOwner = useIsSystemOwner();
+  const sitePublicConfig = useSitePublicStore((s) => s.config);
+  const displayName =
+    sitePublicConfig?.site_name?.trim() ||
+    sitePublicConfig?.app_name?.trim() ||
+    siteConfig.name;
   const collapsed = useLayoutStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useLayoutStore((s) => s.toggleSidebar);
 
@@ -27,13 +35,14 @@ export function AppSidebar() {
       { label: "数据分析", href: "/analytics" },
       { label: "项目模板", href: "/templates" },
       { label: "团队管理", href: "/team/members" },
+      ...(isSystemOwner ? [{ label: "系统设置", href: "/admin/site" }] : []),
     ];
     const merged = [...fromMenu];
     for (const item of extras) {
       if (!merged.some((n) => n.href === item.href)) merged.push(item);
     }
     return merged;
-  }, [menuList]);
+  }, [menuList, isSystemOwner]);
 
   const sidebarWidth = collapsed ? 64 : 240;
 
@@ -54,11 +63,11 @@ export function AppSidebar() {
           <>
             <Link
               className="flex min-w-0 flex-1 items-center gap-2 rounded-md py-1 pr-1 hover:opacity-90"
-              title={siteConfig.name}
+              title={displayName}
               to="/workbench"
             >
               <PearLogo />
-              <span className="type-heading-xsmall truncate">{siteConfig.name}</span>
+              <span className="type-heading-xsmall truncate">{displayName}</span>
             </Link>
             <button
               aria-label="收起侧栏"
@@ -71,7 +80,7 @@ export function AppSidebar() {
             </button>
           </>
         ) : (
-          <Link aria-label={siteConfig.name} title={siteConfig.name} to="/workbench">
+          <Link aria-label={displayName} title={displayName} to="/workbench">
             <PearLogo />
           </Link>
         )}

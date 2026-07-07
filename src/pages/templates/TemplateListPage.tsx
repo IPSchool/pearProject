@@ -73,7 +73,7 @@ export default function TemplateListPage() {
     <div className="space-y-6">
       <PageHeader
         actions={<Button onPress={() => setOpen(true)}>新建模板</Button>}
-        description="从模板快速创建项目（Legacy projectTemplate）"
+        description="选用模板快速搭建项目结构与看板列"
         title="项目模板"
       />
       {error ? <p className="text-sm text-danger">{error}</p> : null}

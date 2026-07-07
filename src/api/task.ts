@@ -92,8 +92,12 @@ export async function fetchTaskByIssueKey(issueKey: string) {
   return res.data;
 }
 
-export async function markTaskDone(taskCode: string, done = 1) {
-  const res = await post("project/task/taskDone", { taskCode, done });
+export async function markTaskDone(taskCode: string, done = 1, resolution?: string) {
+  const res = await post("project/task/taskDone", {
+    taskCode,
+    done,
+    ...(resolution ? { resolution } : {}),
+  });
   if (!isOk(res)) {
     throw new Error(res.msg || "更新任务状态失败");
   }
@@ -164,11 +168,17 @@ export async function fetchTaskActivity(taskCode: string) {
   return res.data.list ?? [];
 }
 
-export async function fetchProjectTasks(projectCode: string, page = 1, pageSize = 200) {
+export async function fetchProjectTasks(
+  projectCode: string,
+  page = 1,
+  pageSize = 200,
+  memberCode?: string,
+) {
   const res = await post<{ list: TaskItem[]; total: number }>("project/task/index", {
     projectCode,
     page,
     pageSize,
+    ...(memberCode ? { memberCode } : {}),
   });
   if (!isOk(res)) throw new Error(res.msg || "获取任务列表失败");
   return res.data;
@@ -222,12 +232,18 @@ export type TaskPatch = Partial<{
   description: string;
   pri: number;
   status: number;
+  resolution: string | null;
   end_time: string;
   begin_time: string;
 }>;
 
 export async function patchTask(taskCode: string, fields: TaskPatch) {
-  const res = await post("project/task/edit", { taskCode, ...fields });
+  const body: Record<string, string | number | undefined> = { taskCode };
+  for (const [key, value] of Object.entries(fields)) {
+    if (value === undefined) continue;
+    body[key] = value === null ? "" : value;
+  }
+  const res = await post("project/task/edit", body);
   if (!isOk(res)) throw new Error(res.msg || "更新任务失败");
 }
 

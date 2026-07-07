@@ -18,13 +18,21 @@ import { TaskActivityFeed } from "@/components/task-activity-feed";
 import { MemberAvatar } from "@/components/member-avatar";
 import { MarkdownContent } from "@/components/markdown-content";
 import { MarkdownEditor, MarkdownEditorActions } from "@/components/markdown-editor";
+import { isTaskClosed } from "@/lib/task-resolution";
 import { TaskStatusChip } from "@/components/task-status-chip";
+import {
+  CLOSED_RESOLUTION_OPTIONS,
+  effectiveResolution,
+  resolutionLabel,
+} from "@/lib/task-resolution";
 import {
   TaskParentBreadcrumb,
   TaskParentPicker,
   TaskSubtasksSection,
 } from "@/components/task-subtasks-section";
 import * as taskApi from "@/api/task";
+import * as milestoneApi from "@/api/milestone";
+import type { Milestone } from "@/api/milestone";
 import * as taskTagApi from "@/api/taskTag";
 import { useTaskDetail } from "@/hooks/use-task-detail";
 import type { ProjectMember, TaskLogItem, TaskTagItem } from "@/types/api";
@@ -155,6 +163,20 @@ export function TaskDetailPanel({
   const [wtContent, setWtContent] = useState("");
   const [wtBegin, setWtBegin] = useState("");
   const [newTagName, setNewTagName] = useState("");
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
+
+  useEffect(() => {
+    if (!task) return;
+    const ref =
+      task.project_id != null
+        ? String(task.project_id)
+        : projectRef || task.project_code || "";
+    if (!ref) return;
+    milestoneApi
+      .fetchProjectMilestones(ref)
+      .then(setMilestones)
+      .catch(() => setMilestones([]));
+  }, [task, projectRef]);
 
   useEffect(() => {
     if (!task) return;
@@ -240,6 +262,13 @@ export function TaskDetailPanel({
     await runAction(async () => {
       await taskApi.assignTask(task.code, executorCode);
     }, "更新经办人失败");
+  }
+
+  async function changeResolution(resolution: string) {
+    if (!task) return;
+    await runAction(async () => {
+      await taskApi.patchTask(task.code, { resolution });
+    }, "更新解决方案失败");
   }
 
   async function toggleDone() {
@@ -351,6 +380,42 @@ export function TaskDetailPanel({
           <ListBox>
             {STATUS_OPTIONS.map((o) => (
               <ListBox.Item key={o.value} id={String(o.value)} textValue={o.label}>
+                {o.label}
+                <ListBox.ItemIndicator />
+              </ListBox.Item>
+            ))}
+          </ListBox>
+        </Select.Popover>
+      </Select>
+    );
+  }
+
+  function resolutionSelect(className?: string) {
+    if (!task || !isTaskClosed(task)) {
+      return (
+        <span className="type-body text-subtle" title="将状态设为「已完成」后可选择解决方案">
+          {resolutionLabel(null)}
+        </span>
+      );
+    }
+    const current = effectiveResolution(task) ?? "fixed";
+    return (
+      <Select
+        aria-label="解决方案"
+        selectedKey={current}
+        onSelectionChange={(key) => {
+          const v = String(key);
+          if (v !== current) void changeResolution(v);
+        }}
+      >
+        <Select.Trigger className={clsx("w-full min-h-9", className)}>
+          <Select.Value />
+          <Select.Indicator />
+        </Select.Trigger>
+        <Select.Popover>
+          <ListBox>
+            {CLOSED_RESOLUTION_OPTIONS.map((o) => (
+              <ListBox.Item key={o.value} id={o.value} textValue={o.label}>
                 {o.label}
                 <ListBox.ItemIndicator />
               </ListBox.Item>
@@ -514,6 +579,47 @@ export function TaskDetailPanel({
           </button>
         )}
       </section>
+    );
+  }
+
+  function milestoneSelect() {
+    if (!task) return null;
+    const current = task.milestone?.code ?? "";
+    return (
+      <Select
+        aria-label="里程碑"
+        selectedKey={current || "none"}
+        onSelectionChange={(key) => {
+          const value = String(key ?? "none");
+          void runAction(
+            () =>
+              milestoneApi.setTaskMilestone(
+                task.code,
+                value === "none" ? null : value,
+              ),
+            "更新里程碑失败",
+          );
+        }}
+      >
+        <Select.Trigger className="w-full">
+          <Select.Value />
+          <Select.Indicator />
+        </Select.Trigger>
+        <Select.Popover>
+          <ListBox>
+            <ListBox.Item id="none" textValue="无">
+              无
+              <ListBox.ItemIndicator />
+            </ListBox.Item>
+            {milestones.map((m) => (
+              <ListBox.Item key={m.code} id={m.code} textValue={m.name}>
+                {m.name}
+                <ListBox.ItemIndicator />
+              </ListBox.Item>
+            ))}
+          </ListBox>
+        </Select.Popover>
+      </Select>
     );
   }
 
@@ -821,6 +927,7 @@ export function TaskDetailPanel({
           <aside className="w-full shrink-0 lg:w-72 lg:border-l lg:border-separator lg:pl-6">
             <div className="space-y-3">
               {statusSelect()}
+              <SidebarField label="解决方案">{resolutionSelect()}</SidebarField>
               <Button
                 fullWidth
                 isPending={submitting}
@@ -844,6 +951,7 @@ export function TaskDetailPanel({
                 />
               </SidebarField>
               <SidebarField label="截止日期">{dueDateField()}</SidebarField>
+              <SidebarField label="里程碑">{milestoneSelect()}</SidebarField>
               <SidebarField label="标签">{tagsBlock(true)}</SidebarField>
               <SidebarField label="报告人">
                 {task.creator?.name ? (

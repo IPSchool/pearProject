@@ -9,6 +9,9 @@ export type SiteConfig = typeof siteConfig;
 export const siteConfig = {
   name: "PearProject",
   description: "梨子项目管理系统 — 团队协作与项目看板",
+  /** 登录/注册页左侧品牌说明 */
+  tagline:
+    "在一个地方规划项目、分配任务、协作文档。看板、列表、日历与时间线，帮助团队把计划落到实处。",
   navItems: [
     { label: "工作台", href: "/workbench" },
     { label: "项目", href: "/projects" },

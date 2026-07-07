@@ -7,6 +7,7 @@ import { MemberAvatar } from "@/components/member-avatar";
 import { BellIcon, LogOutIcon, SettingsIcon } from "@/components/nav-icon";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { useAuthStore } from "@/stores/auth";
+import { useRealtimeStore } from "@/stores/realtime";
 
 function formatBadgeCount(count: number) {
   if (count <= 0) return null;
@@ -68,6 +69,7 @@ export function AppHeaderActions() {
   const navigate = useNavigate();
   const member = useAuthStore((s) => s.member);
   const logout = useAuthStore((s) => s.logout);
+  const notifyTick = useRealtimeStore((s) => s.notifyTick);
   const [unread, setUnread] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -76,7 +78,7 @@ export function AppHeaderActions() {
     fetchNoReads()
       .then((d) => setUnread(d.total ?? d.totalSum?.notice ?? 0))
       .catch(() => setUnread(0));
-  }, []);
+  }, [notifyTick]);
 
   useEffect(() => {
     if (!menuOpen) return;

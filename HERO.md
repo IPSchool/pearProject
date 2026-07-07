@@ -1,18 +1,22 @@
 # PearProject Hero
 
-**Hero** 分支是 PearProject 前端的 **从零重写**：React 19 + HeroUI v3 + Vite + TypeScript。
+PearProject 的 Web 客户端：用摘要页、多视图任务管理与团队权限，支撑从规划到交付的日常协作。
 
-| 分支 | 技术栈 | 定位 |
-|------|--------|------|
-| `HistoryV` / `master` (旧) | Vue 2 + Ant Design Vue 1.7 | **产品原型** — 交互与功能参考 |
-| **`Hero`** | React 19 + HeroUI 3 + Tailwind 4 | **正式重建** — 对接 pearProjectApi |
+对接 [pearProjectApi](https://github.com/a54552239/pearProjectApi)（ThinkPHP 6），复用 `project/*` 业务 API，并可选对接 Jira REST 兼容层。
+
+## 仓库定位
+
+| 分支 | 说明 |
+|------|------|
+| **Hero**（本分支） | 正式前端 — React 19 + HeroUI 3 + Vite + TypeScript |
+| `HistoryV` | 2.8.x Vue 原型，只读，作交互与流程参考 |
 
 ## 设计原则
 
-1. **不迁移 Vue 代码** — 只参考 HistoryV 的页面流程与 pearProjectDocs 功能设计。
-2. **API 不变** — 对接 master TP6 Legacy `project/*`（与 Gate A 一致）。
-3. **现代栈** — 函数组件、TypeScript strict、Vite、Zustand、Axios。
-4. **一次交付** — 核心产品域已对齐 Legacy API，后续按需迭代。
+1. **产品优先** — 对齐 [pearProjectDocs](../pearProjectDocs/Manual/架构设计.md) 功能设计与 Jira 式项目空间。
+2. **API 稳定** — 复用 pearProjectApi `project/*`，与后端 Gate A 验收保持一致。
+3. **现代体验** — 函数组件、TypeScript strict、响应式布局、可访问的交互组件。
+4. **持续交付** — 核心产品域已可用，按路线图迭代补齐能力。
 
 ## 技术栈
 
@@ -29,7 +33,7 @@
 ## 本地开发
 
 ```bash
-# 1. 启动后端（8090）
+# 1. 启动后端（8090）与 WebSocket（2345）
 cd ../pearProjectApi/docker/jira && docker compose up -d
 docker exec jira-app-1 php /app/docker/jira/fixture-init.php
 
@@ -162,17 +166,93 @@ npm run build
 
 ## 原型对照
 
-- **Vue 原型**：`git checkout HistoryV` — 仅作 UI/流程参考
-- **API 文档**：pearProjectDocs `Manual/API参考.md`、`/swagger-ui`（8090）
-- **验收**：后端 Gate A 保证 Legacy API 不回退；Hero 前端对齐 SystemDesign
+- **2.8.x 原型**：`git checkout HistoryV` — 对照历史交互（只读）
+- **API 文档**：pearProjectDocs [API参考.md](../pearProjectDocs/Manual/API参考.md)、Swagger http://127.0.0.1:8090/swagger-ui
+- **验收**：`bash tests/hero/run.sh`；后端 Gate A 保证 API 行为不回退
 
 ## 与 master 的关系
 
-- `Hero` 独立演进，成熟后合并或替换 `master` 前端。
-- 后端继续使用 pearProjectApi `master`（TP6 + Jira 层可选）。
+- Hero 为独立演进的前端分支，成熟后可合并或替换仓库默认前端。
+- 后端使用 pearProjectApi `master`（TP6 + 可选 Jira 层）。
+
+## 实时推送（WebSocket）
+
+顶栏圆点表示 GatewayWorker 连接状态：**灰 = 未配置**，**绿 = 已连接**。启用后可：
+
+- **看板 / 列表 / 日历**：同组织其他成员改任务时自动刷新
+- **通知铃铛**：收到 `notice` / `task` / `events` 推送时更新未读数
+
+### 1. 启动 GatewayWorker（Docker 推荐）
+
+`docker/jira` 已包含 `gateway` 服务，与 API 同网段：
+
+```bash
+cd pearProjectApi/docker/jira
+docker compose up -d          # 含 mysql / redis / app / gateway
+docker compose up -d gateway  # 仅补启 WebSocket
+docker compose ps             # gateway 应监听 2345
+```
+
+**Docker Hub 拉取超时**（`auth.docker.io` timeout）时，目录下已有 `.env` 使用国内镜像：
+
+```bash
+# docker/jira/.env（已随仓库提供）
+PHP_BASE=docker.m.daocloud.io/library/php:8.2-fpm
+
+docker compose build app
+docker compose up -d gateway
+```
+
+若暂时无法 rebuild，gateway 启动脚本会在容器内**自动补装 pcntl**（首次约 10 秒）。**推荐使用统一入口 `GateWayWorker/start.php`**，避免 Register/Gateway/BusinessWorker 分进程启动导致 `SendBufferToWorker fail`。
+
+后端 `.env.docker` 已默认：
+
+```ini
+[config]
+notice_push = true
+
+[gateway]
+register_host = gateway
+register_port = 2346
+```
+
+修改后需 `docker compose restart app gateway`。
+
+### 2. 配置 Hero 前端
+
+```bash
+cd pearProject
+cp .env.example .env   # 若尚未创建
+# 确认含：
+# VITE_WS_URL=ws://127.0.0.1:2345
+npm run dev
+```
+
+### 3. 本机直跑 GatewayWorker（非 Docker）
+
+```bash
+cd pearProjectApi
+# config.php 默认 GW_SERVER_ADDRESS=127.0.0.1，端口 2345/2346
+bash start.sh
+
+# API .env 中：
+# notice_push = true
+# gateway.register_host = 127.0.0.1
+```
+
+### 4. 验证
+
+1. 登录后顶栏圆点应变 **绿色**（实时已连接）
+2. 打开两个浏览器窗口，进入**同一项目看板**
+3. 在 A 窗口拖拽/创建任务 → B 窗口应在数秒内自动刷新
+4. 断开 GatewayWorker 后圆点变灰或「已断开」
+
+### 推送触发点（后端）
+
+任务 **创建 / 指派 / 排序（跨列）/ 完成** 时，向组织组广播 `organization:task`。
 
 ## 已知限制
 
-- WebSocket 状态徽章需配置 `VITE_WS_URL`（可选）。
-- 部门排序、批量更新成员信息等 Vue 占位功能未实现（HistoryV 同样未实现）。
-- 仓库内仍保留 Vue Legacy 源码（`src/views` 等），Hero 构建不引用。
+- 未启动 GatewayWorker 或未配置 `VITE_WS_URL` 时，实时功能自动降级为纯 HTTP，不影响正常使用。
+- 部门排序、批量更新成员信息等能力尚未实现。
+- 仓库内仍保留 Vue 2 源码（`src/views` 等），Hero 构建不引用。
